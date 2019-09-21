@@ -1,5 +1,5 @@
 package com.holandatiago.cryptotrader.bots
-
+/*
 import com.holandatiago.cryptotrader.exchanges.Exchange
 import com.holandatiago.cryptotrader.models.Market
 
@@ -37,3 +37,4 @@ class SpreadBot(exchange: Exchange) extends Runnable {
     balances(market.targetCurrency).available > 0*/
   }
 }
+*/

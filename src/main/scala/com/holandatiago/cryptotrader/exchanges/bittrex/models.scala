@@ -11,54 +11,54 @@ object models {
   implicit def bittrexResponse[T: JsonFormat] = jsonFormat3(BittrexResponse[T])
 
   final case class Market(
-      marketCurrency: String,
-      baseCurrency: String,
-      marketCurrencyLong: String,
-      baseCurrencyLong: String,
-      minTradeSize: BigDecimal,
-      marketName: String,
-      isActive: Boolean,
-      created: String,
-      notice: Option[String],
-      isSponsored: Option[Boolean],
-      logoUrl: Option[String])
+      MarketCurrency: String,
+      BaseCurrency: String,
+      MarketCurrencyLong: String,
+      BaseCurrencyLong: String,
+      MinTradeSize: BigDecimal,
+      MarketName: String,
+      IsActive: Boolean,
+      Created: String,
+      Notice: Option[String],
+      IsSponsored: Option[Boolean],
+      LogoUrl: Option[String])
   implicit val market = jsonFormat11(Market)
 
   final case class MarketSummary(
-      marketName: String,
-      high: BigDecimal,
-      low: BigDecimal,
-      volume: BigDecimal,
-      last: BigDecimal,
-      baseVolume: BigDecimal,
-      timeStamp: String,
-      bid: BigDecimal,
-      ask: BigDecimal,
-      openBuyOrders: BigDecimal,
-      openSellOrders: BigDecimal,
-      prevDay: BigDecimal,
-      created: String,
-      displayMarketName: Option[String])
+      MarketName: String,
+      High: BigDecimal,
+      Low: BigDecimal,
+      Volume: BigDecimal,
+      Last: BigDecimal,
+      BaseVolume: BigDecimal,
+      TimeStamp: String,
+      Bid: BigDecimal,
+      Ask: BigDecimal,
+      OpenBuyOrders: BigDecimal,
+      OpenSellOrders: BigDecimal,
+      PrevDay: BigDecimal,
+      Created: String,
+      DisplayMarketName: Option[String])
   implicit val marketSummary = jsonFormat14(MarketSummary)
 
   final case class Order(
-      quantity: BigDecimal,
-      rate: BigDecimal)
+      Quantity: BigDecimal,
+      Rate: BigDecimal)
   implicit val order = jsonFormat2(Order)
 
   final case class OrderBook(
-      buyOrders: List[Order],
-      sellOrders: List[Order])
+      buy: List[Order],
+      sell: List[Order])
   implicit val orderBook = jsonFormat2(OrderBook)
 
   final case class Trade(
-      id: BigDecimal,
-      timestamp: String,
-      quantity: BigDecimal,
-      price: BigDecimal,
-      total: BigDecimal,
-      fillType: String,
-      orderType: String)
+      Id: BigDecimal,
+      TimeStamp: String,
+      Quantity: BigDecimal,
+      Price: BigDecimal,
+      Total: BigDecimal,
+      FillType: String,
+      OrderType: String)
   implicit val trade = jsonFormat7(Trade)
 
   final case class Uuid(
@@ -66,57 +66,57 @@ object models {
   implicit val uuid = jsonFormat1(Uuid)
 
   final case class OpenOrder(
-      uuid: Option[String],
-      orderUuid: String,
-      exchange: String,
-      orderType: String,
-      quantity: BigDecimal,
-      quantityRemaining: BigDecimal,
-      limit: BigDecimal,
-      commissionPaid: BigDecimal,
-      price: BigDecimal,
-      pricePerUnit: Option[BigDecimal],
-      opened: String,
-      closed: Option[BigDecimal],
-      cancelInitiated: Boolean,
-      immediateOrCancel: Boolean,
-      isConditional: Boolean,
-      condition: Option[String],
-      conditionTarget: Option[String])
+      Uuid: Option[String],
+      OrderUuid: String,
+      Exchange: String,
+      OrderType: String,
+      Quantity: BigDecimal,
+      QuantityRemaining: BigDecimal,
+      Limit: BigDecimal,
+      CommissionPaid: BigDecimal,
+      Price: BigDecimal,
+      PricePerUnit: Option[BigDecimal],
+      Opened: String,
+      Closed: Option[BigDecimal],
+      CancelInitiated: Boolean,
+      ImmediateOrCancel: Boolean,
+      IsConditional: Boolean,
+      Condition: Option[String],
+      ConditionTarget: Option[String])
   implicit val openOrder = jsonFormat17(OpenOrder)
 
   final case class Balance(
-      currency: String,
-      balance: BigDecimal,
-      available: BigDecimal,
-      pending: BigDecimal,
-      cryptoAddress: Option[String],
-      requested: Option[Boolean],
-      uuid: Option[String])
+      Currency: String,
+      Balance: BigDecimal,
+      Available: BigDecimal,
+      Pending: BigDecimal,
+      CryptoAddress: Option[String],
+      Requested: Option[Boolean],
+      Uuid: Option[String])
   implicit val balance = jsonFormat7(Balance)
 
   final case class ClosedOrder(
-      accountId: Option[String],
-      orderUuid: String,
-      exchange: String,
-      orderType: String,
-      quantity: BigDecimal,
-      quantityRemaining: BigDecimal,
-      limit: BigDecimal,
-      reserved: BigDecimal,
-      reserveRemaining: BigDecimal,
-      commissionReserved: BigDecimal,
-      commissionReserveRemaining: BigDecimal,
-      commissionPaid: BigDecimal,
-      price: BigDecimal,
-      pricePerUnit: Option[BigDecimal],
-      opened: String,
-      closed: Option[String],
-      isOpen: Boolean,
-      sentinel: String,
-      cancelInitiated: Boolean,
-      immediateOrCancel: Boolean,
-      isConditional: Boolean,
-      condition: String)
+      AccountId: Option[String],
+      OrderUuid: String,
+      Exchange: String,
+      OrderType: String,
+      Quantity: BigDecimal,
+      QuantityRemaining: BigDecimal,
+      Limit: BigDecimal,
+      Reserved: BigDecimal,
+      ReserveRemaining: BigDecimal,
+      CommissionReserved: BigDecimal,
+      CommissionReserveRemaining: BigDecimal,
+      CommissionPaid: BigDecimal,
+      Price: BigDecimal,
+      PricePerUnit: Option[BigDecimal],
+      Opened: String,
+      Closed: Option[String],
+      IsOpen: Boolean,
+      Sentinel: String,
+      CancelInitiated: Boolean,
+      ImmediateOrCancel: Boolean,
+      IsConditional: Boolean,
+      Condition: String)
   implicit val closedOrder = jsonFormat22(ClosedOrder)
 }

@@ -9,10 +9,11 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.holandatiago.cryptotrader.exchanges.bittrex.models._
 import com.holandatiago.cryptotrader.exchanges.utils._
+import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat
 
-import scala.concurrent.duration._
 import scala.concurrent._
+import scala.concurrent.duration._
 
 class BittrexClient(apiKey: ApiKey) {
   implicit val system = ActorSystem()
@@ -63,7 +64,7 @@ class BittrexClient(apiKey: ApiKey) {
   def cancel(order: String) =
     get[Uuid]("market", "cancel", Map("uuid" -> order))
 
-  def getOopenOrders(market: String) =
+  def getOpenOrders(market: String) =
     get[List[OpenOrder]]("market", "getopenorders", Map("market" -> market))
 
   def getBalances =
