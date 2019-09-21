@@ -32,8 +32,8 @@ class SpreadBot(exchange: Exchange) extends Runnable {
   }
 
   def tradeOnMarket(market: Market): Unit = {
-    val orderBook = exchange.getOrderBook(market)
+    /*val orderBook = exchange.getOrderBook(market)
 
-    balances(market.targetCurrency).available > 0
+    balances(market.targetCurrency).available > 0*/
   }
 }

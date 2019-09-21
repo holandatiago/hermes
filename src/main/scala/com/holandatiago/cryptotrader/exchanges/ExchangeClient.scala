@@ -1,14 +1,8 @@
 package com.holandatiago.cryptotrader.exchanges
 
-import com.holandatiago.cryptotrader.models._
+import utils._
 
-object Exchange {
-  def apply(name: String): Exchange = name match {
-    case "binance" => new Binance()
-  }
-}
-
-trait Exchange {
+class ExchangeClient {/*
   def key
   def timeout
   def getMarkets
@@ -23,4 +17,5 @@ trait Exchange {
   def getMarketSummaries: List[MarketSummary]
   def getOrderBook(market: Market): OrderBook
   def getLastTrades(market: Market): List[Trade]
+*/
 }
