@@ -1,6 +1,6 @@
 package com.cryptotrader.exchanges
 
-object models {
+object ExchangeModels {
 
   trait Market {
     def name: String
@@ -58,7 +58,6 @@ object models {
     def baseVolume: BigDecimal
     def quoteVolume: BigDecimal
     def timestamp: Long
-    def spread: BigDecimal = ask / bid
   }
 
   /*
@@ -174,13 +173,16 @@ object models {
 }
    */
 
+  trait OrderSide
+  object Buy extends OrderSide
+  object Sell extends OrderSide
+
   trait Trade {
     def id: Long
     def price: BigDecimal
     def volume: BigDecimal
     def timestamp: Long
-    def buyer: Boolean
-    def seller: Boolean = !buyer
+    def side: OrderSide
   }
   /*
   [
@@ -263,4 +265,8 @@ object models {
       }
     ]
    */
+
+  trait Order {
+
+  }
 }

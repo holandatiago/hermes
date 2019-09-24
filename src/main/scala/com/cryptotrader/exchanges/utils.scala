@@ -5,7 +5,7 @@ import javax.crypto.spec.SecretKeySpec
 import javax.xml.bind.DatatypeConverter
 
 object utils {
-  case class ApiKey(key: String, secret: String)
+  case class ApiKey(public: String, secret: String)
 
   case class Auth(key: String, algorithm: String) {
     val secret = new SecretKeySpec(key.getBytes, algorithm)

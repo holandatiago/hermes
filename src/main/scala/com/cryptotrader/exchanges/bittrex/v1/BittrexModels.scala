@@ -1,9 +1,10 @@
 package com.cryptotrader.exchanges.bittrex.v1
 
+import com.cryptotrader.exchanges.ExchangeModels
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat
 
-object models {
+object BittrexModels {
   final case class BittrexResponse[T](
       success: Boolean,
       message: String,
@@ -23,6 +24,14 @@ object models {
       IsSponsored: Option[Boolean],
       LogoUrl: Option[String])
   implicit val market = jsonFormat11(Market)
+  implicit def marketConversion(markets: List[Market]): List[ExchangeModels.Market] = {null}
+  implicit def market1Conversion(markets: List[MarketSummary]): List[ExchangeModels.Ticker] = {null}
+  implicit def market2Conversion(markets: OrderBook): ExchangeModels.OrderBook = {null}
+  implicit def market3Conversion(markets: List[Trade]): List[ExchangeModels.Trade] = {null}
+  implicit def market4Conversion(markets: Uuid): Unit = {}
+  implicit def market5Conversion(markets: Uuid): Unit = {}
+  implicit def market6Conversion(markets: List[Balance]): List[ExchangeModels.Balance] = {null}
+  implicit def market7Conversion(markets: List[OpenOrder]): List[ExchangeModels.Order] = {null}
 
   final case class MarketSummary(
       MarketName: String,
