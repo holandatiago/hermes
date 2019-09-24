@@ -1,40 +1,33 @@
 package com.holandatiago.cryptotrader.bots
-/*
-import com.holandatiago.cryptotrader.exchanges.Exchange
-import com.holandatiago.cryptotrader.models.Market
 
-class SpreadBot(exchange: Exchange) extends Runnable {
+import com.holandatiago.cryptotrader.exchanges.bittrex.v1.models._
+import com.holandatiago.cryptotrader.exchanges.bittrex.v1.BittrexClient
+
+class SpreadBot(exchange: BittrexClient) extends Runnable {
   def run(): Unit = {
     while (true) {
-      val bestMarket = searchForBestMarket
-      tradeOnMarket(bestMarket)
+      searchForBestMarket
+          .foreach(tradeOnMarket)
     }
   }
 
-  def searchForBestMarket: Market = {
-    val balances = exchange.getBalances.map(bal => (bal.currency, bal)).toMap
-    var bestMarketOption: Option[Market] = None
+  def searchForBestMarket: Option[Market] = {
+    val balances = exchange.getBalances.map(bal => (bal.Currency, bal)).toMap
+    val markets = exchange.getMarkets.map(mkt => (mkt.MarketName, mkt)).toMap
 
-    while (bestMarketOption.isEmpty) {
-      val summaries = exchange.getMarketSummaries
-      bestMarketOption = summaries
-          .filter(_.market.isActive)
-          .filter(_.volume > 5)
-          .sortBy(_.spread).reverse
-          .map(_.market)
-          .find { market =>
-            (balances(market.baseCurrency).available > 0) ||
-                (balances(market.targetCurrency).available > 0)
-          }
-    }
-
-    bestMarketOption.get
+    exchange.getTickers
+        .filter(_.Volume > 5)
+        .sortBy(tkr => tkr.Ask / tkr.Bid)
+        .reverse
+        .map(_.MarketName)
+        .map(markets)
+        .find(mkt => balances(mkt.BaseCurrency).Available > mkt.MinTradeSize)
   }
 
   def tradeOnMarket(market: Market): Unit = {
-    /*val orderBook = exchange.getOrderBook(market)
+    val orderBook = exchange.getOrderBook(market.MarketName)
+    val trades = exchange.getTrades(market.MarketName)
 
-    balances(market.targetCurrency).available > 0*/
+    //balances(market.targetCurrency).available > 0
   }
 }
-*/

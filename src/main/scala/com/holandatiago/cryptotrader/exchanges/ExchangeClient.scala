@@ -1,8 +1,6 @@
 package com.holandatiago.cryptotrader.exchanges
 
-import utils._
-
-class ExchangeClient {/*
+trait ExchangeClient {/*
   def key
   def timeout
   def getMarkets

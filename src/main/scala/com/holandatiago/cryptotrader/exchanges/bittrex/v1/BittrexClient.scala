@@ -1,4 +1,4 @@
-package com.holandatiago.cryptotrader.exchanges.bittrex
+package com.holandatiago.cryptotrader.exchanges.bittrex.v1
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -7,7 +7,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
-import com.holandatiago.cryptotrader.exchanges.bittrex.models._
+import com.holandatiago.cryptotrader.exchanges.ExchangeClient
+import com.holandatiago.cryptotrader.exchanges.bittrex.v1.models._
 import com.holandatiago.cryptotrader.exchanges.utils._
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat
@@ -15,7 +16,7 @@ import spray.json.JsonFormat
 import scala.concurrent._
 import scala.concurrent.duration._
 
-class BittrexClient(apiKey: ApiKey) {
+class BittrexClient(apiKey: ApiKey) extends ExchangeClient {
   implicit val system = ActorSystem()
   implicit val materializer =ActorMaterializer()
   implicit val executionContext = system.dispatcher
@@ -44,32 +45,25 @@ class BittrexClient(apiKey: ApiKey) {
   def getMarkets =
     get[List[Market]]("public", "getmarkets")
 
-  def getMarketSummaries =
+  def getTickers =
     get[List[MarketSummary]]("public", "getmarketsummaries")
 
   def getOrderBook(market: String) =
     get[OrderBook]("public", "getorderbook", Map("market" -> market, "type" -> "both"))
 
-  def getMarketHistory(market: String) =
+  def getTrades(market: String) =
     get[List[Trade]]("public", "getmarkethistory", Map("market" -> market))
 
-  def buy(market: String, quantity: BigDecimal, rate: BigDecimal) =
-    get[Uuid]("market", "buylimit",
-      Map("market" -> market, "quantity" -> quantity.toString, "rate" -> rate.toString))
+  def sendOrder(market: String, action: String, price: BigDecimal, volume: BigDecimal) =
+    get[Uuid]("market", s"${action}limit",
+      Map("market" -> market, "rate" -> price.toString, "quantity" -> volume.toString))
 
-  def sell(market: String, quantity: BigDecimal, rate: BigDecimal) =
-    get[Uuid]("market", "selllimit",
-      Map("market" -> market, "quantity" -> quantity.toString, "rate" -> rate.toString))
-
-  def cancel(order: String) =
-    get[Uuid]("market", "cancel", Map("uuid" -> order))
+  def cancelOrder(orderId: String) =
+    get[Uuid]("market", "cancel", Map("uuid" -> orderId))
 
   def getOpenOrders(market: String) =
     get[List[OpenOrder]]("market", "getopenorders", Map("market" -> market))
 
   def getBalances =
     get[List[Balance]]("account", "getbalances")
-
-  def getOrder(order: String) =
-    get[ClosedOrder]("account", "getorder", Map("uuid" -> order))
 }

@@ -1,4 +1,4 @@
-package com.holandatiago.cryptotrader.exchanges.bittrex
+package com.holandatiago.cryptotrader.exchanges.bittrex.v1
 
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat
@@ -94,29 +94,4 @@ object models {
       Requested: Option[Boolean],
       Uuid: Option[String])
   implicit val balance = jsonFormat7(Balance)
-
-  final case class ClosedOrder(
-      AccountId: Option[String],
-      OrderUuid: String,
-      Exchange: String,
-      OrderType: String,
-      Quantity: BigDecimal,
-      QuantityRemaining: BigDecimal,
-      Limit: BigDecimal,
-      Reserved: BigDecimal,
-      ReserveRemaining: BigDecimal,
-      CommissionReserved: BigDecimal,
-      CommissionReserveRemaining: BigDecimal,
-      CommissionPaid: BigDecimal,
-      Price: BigDecimal,
-      PricePerUnit: Option[BigDecimal],
-      Opened: String,
-      Closed: Option[String],
-      IsOpen: Boolean,
-      Sentinel: String,
-      CancelInitiated: Boolean,
-      ImmediateOrCancel: Boolean,
-      IsConditional: Boolean,
-      Condition: String)
-  implicit val closedOrder = jsonFormat22(ClosedOrder)
 }
