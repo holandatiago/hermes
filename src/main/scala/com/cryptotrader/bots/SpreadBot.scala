@@ -1,7 +1,7 @@
-package com.holandatiago.cryptotrader.bots
+package com.cryptotrader.bots
 
-import com.holandatiago.cryptotrader.exchanges.bittrex.v1.models._
-import com.holandatiago.cryptotrader.exchanges.bittrex.v1.BittrexClient
+import com.cryptotrader.exchanges.bittrex.v1.BittrexClient
+import com.cryptotrader.exchanges.bittrex.v1.models._
 
 class SpreadBot(exchange: BittrexClient) extends Runnable {
   def run(): Unit = {

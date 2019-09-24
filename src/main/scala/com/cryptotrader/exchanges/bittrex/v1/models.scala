@@ -1,4 +1,4 @@
-package com.holandatiago.cryptotrader.exchanges.bittrex.v1
+package com.cryptotrader.exchanges.bittrex.v1
 
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat

@@ -1,4 +1,4 @@
-package com.holandatiago.cryptotrader.exchanges
+package com.cryptotrader.exchanges
 
 trait ExchangeClient {/*
   def key

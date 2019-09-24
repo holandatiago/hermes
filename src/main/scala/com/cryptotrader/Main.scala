@@ -1,4 +1,4 @@
-package com.holandatiago.cryptotrader
+package com.cryptotrader
 
 object Main extends App {
   /*val exchange = exchanges.Exchange()

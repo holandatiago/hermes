@@ -1,4 +1,4 @@
-package com.holandatiago.cryptotrader.exchanges.bittrex.v1
+package com.cryptotrader.exchanges.bittrex.v1
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -7,9 +7,9 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
-import com.holandatiago.cryptotrader.exchanges.ExchangeClient
-import com.holandatiago.cryptotrader.exchanges.bittrex.v1.models._
-import com.holandatiago.cryptotrader.exchanges.utils._
+import com.cryptotrader.exchanges.ExchangeClient
+import com.cryptotrader.exchanges.bittrex.v1.models._
+import com.cryptotrader.exchanges.utils._
 import spray.json.DefaultJsonProtocol._
 import spray.json.JsonFormat
 
@@ -18,7 +18,7 @@ import scala.concurrent.duration._
 
 class BittrexClient(apiKey: ApiKey) extends ExchangeClient {
   implicit val system = ActorSystem()
-  implicit val materializer =ActorMaterializer()
+  implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
 
   val http = Http()
