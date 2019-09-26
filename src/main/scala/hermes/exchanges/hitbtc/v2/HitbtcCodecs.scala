@@ -2,12 +2,11 @@ package hermes.exchanges.hitbtc.v2
 
 import java.sql.Timestamp
 
-import hermes.exchanges.ExchangeCodecs
 import hermes.exchanges.ExchangeModels._
 import hermes.exchanges.utils.OrderSide
 import spray.json._
 
-object HitbtcCodecs extends ExchangeCodecs {
+object HitbtcCodecs extends DefaultJsonProtocol {
   implicit def marketCodec(json: JsValue) = Market(
     name = fromField[String](json, "id"),
     baseCurrency = fromField[String](json, "baseCurrency"),
@@ -28,7 +27,7 @@ object HitbtcCodecs extends ExchangeCodecs {
     last = fromField[BigDecimal](json, "last"),
     baseVolume = fromField[BigDecimal](json, "volume"),
     quoteVolume = fromField[BigDecimal](json, "volumeQuote"),
-    timestamp = fromField[Timestamp](json, "timestamp"))
+    timestamp = Timestamp.valueOf(fromField[String](json, "timestamp")))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(
     price = fromField[BigDecimal](json, "price"),
@@ -42,19 +41,19 @@ object HitbtcCodecs extends ExchangeCodecs {
     id = fromField[Long](json, "id"),
     price = fromField[BigDecimal](json, "price"),
     volume = fromField[BigDecimal](json, "quantity"),
-    timestamp = fromField[Timestamp](json, "timestamp"),
-    side = fromField[OrderSide](json, "side"))
+    timestamp = Timestamp.valueOf(fromField[String](json, "timestamp")),
+    side = OrderSide(fromField[String](json, "side")))
 
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
     id = fromField[String](json, "clientOrderId"),
     market = fromField[String](json, "symbol"),
     status = fromField[String](json, "status"),
-    side = fromField[OrderSide](json, "side"),
+    side = OrderSide(fromField[String](json, "side")),
     price = fromField[BigDecimal](json, "price"),
     volume = fromField[BigDecimal](json, "quantity"),
     remainingVolume = fromField[BigDecimal](json, "cumQuantity"),
-    createdAt = fromField[Timestamp](json, "createdAt"),
-    updatedAt = fromField[Timestamp](json, "updatedAt"))
+    createdAt = Timestamp.valueOf(fromField[String](json, "createdAt")),
+    updatedAt = Timestamp.valueOf(fromField[String](json, "updatedAt")))
 
   implicit def balanceCodec(json: JsValue) = Balance(
     currency = fromField[String](json, "currency"),
