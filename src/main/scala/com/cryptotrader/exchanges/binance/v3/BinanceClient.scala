@@ -4,11 +4,11 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import com.cryptotrader.exchanges._
-import com.cryptotrader.exchanges.binance.v3.BinanceModels._
+import com.cryptotrader.exchanges.ExchangeClient
+import com.cryptotrader.exchanges.ExchangeModels._
+import com.cryptotrader.exchanges.binance.v3.BinanceCodecs._
 import com.cryptotrader.exchanges.utils._
-import spray.json.DefaultJsonProtocol._
-import spray.json.JsonFormat
+import spray.json.RootJsonFormat
 
 class BinanceClient(apiKey: ApiKey) extends ExchangeClient {
   val auth = Auth(apiKey.secret, "HmacSHA256")
@@ -23,32 +23,32 @@ class BinanceClient(apiKey: ApiKey) extends ExchangeClient {
     HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
   }
 
-  override def handleHttpResponse[T: JsonFormat](response: HttpResponse) = {
-    Unmarshal(response).to[BittrexResponse[T]].map(_.result.get)
+  override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
+    Unmarshal(response).to[T]
   }
 
-  def getMarkets: List[ExchangeModels.Market] =
-    makeRequest[List[Market]]("GET", List("v1", "exchangeInfo"))
+  def getMarkets: List[Market] =
+    makeRequest[ExchangeInfo]("GET", List("v1", "exchangeInfo")).symbols
 
-  def getTickers: List[ExchangeModels.Ticker] =
-    makeRequest[List[MarketSummary]]("GET", List("v1", "ticker", "24hr"))
+  def getTickers: List[Ticker] =
+    makeRequest[List[Ticker]]("GET", List("v1", "ticker", "24hr"))
 
-  def getOrderBook(market: String): ExchangeModels.OrderBook =
+  def getOrderBook(market: String): OrderBook =
     makeRequest[OrderBook]("GET", List("v1", "depth"), Map("symbol" -> market))
 
-  def getLastTrades(market: String): List[ExchangeModels.Trade] =
+  def getLastTrades(market: String): List[Trade] =
     makeRequest[List[Trade]]("GET", List("v1", "trades"), Map("symbol" -> market))
 
-  def sendOrder(market: String, side: String, price: BigDecimal, volume: BigDecimal): Unit =
-    makeRequest[Uuid]("POST", List("v3", "order"),
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
+    makeRequest[Option[Nothing]]("POST", List("v3", "order"),
       Map("symbol" -> market, "side" -> side, "type" -> "limit", "price" -> price, "quantity" -> volume))
 
   def cancelOrder(orderId: String): Unit =
-    makeRequest[Uuid]("DELETE", List("v3", "order"), Map("orderId" -> orderId))
+    makeRequest[Option[Nothing]]("DELETE", List("v3", "order"), Map("origClientOrderId" -> orderId))
 
-  def getOpenOrders(market: String): List[ExchangeModels.Order] =
+  def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("v3", "openOrders"), Map("symbol" -> market))
 
-  def getBalances: List[ExchangeModels.Balance] =
-    makeRequest[List[Balance]]("GET", List("v3", "account"))
+  def getBalances: List[Balance] =
+    makeRequest[AccountInfo]("GET", List("v3", "account")).balances
 }

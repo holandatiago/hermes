@@ -17,4 +17,25 @@ object utils {
       DatatypeConverter.printHexBinary(hash)
     }
   }
+
+  trait OrderSide {
+    def opposite: OrderSide
+  }
+
+  object OrderSide {
+    object Buy extends OrderSide {
+      override def opposite = Sell
+      override def toString = "Buy"
+    }
+
+    object Sell extends OrderSide {
+      override def opposite = Buy
+      override def toString = "Sell"
+    }
+
+    def apply(side: String): OrderSide = {
+      List(Buy, Sell).find(_.toString.toLowerCase == side.toLowerCase)
+          .getOrElse(throw new NoSuchElementException(s"OrderSide $side"))
+    }
+  }
 }

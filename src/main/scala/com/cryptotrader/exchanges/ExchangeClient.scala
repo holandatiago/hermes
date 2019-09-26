@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
-import com.cryptotrader.exchanges.utils.ApiKey
-import spray.json.JsonFormat
+import com.cryptotrader.exchanges.ExchangeModels._
+import com.cryptotrader.exchanges.utils._
+import spray.json.{JsonFormat, RootJsonFormat}
 
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -25,28 +26,28 @@ trait ExchangeClient {
   val http = Http()
 
   def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
-  def handleHttpResponse[T: JsonFormat](response: HttpResponse): Future[T]
+  def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
 
-  def makeRequest[T: JsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
+  def makeRequest[T: RootJsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
     val httpRequest = buildHttpRequest(method, route, params)
     val httpResponse = http.singleRequest(httpRequest)
     val response = httpResponse.flatMap(handleHttpResponse[T])
     Await.result(response, Duration(30, SECONDS))
   }
 
-  def getMarkets: List[ExchangeModels.Market]
+  def getMarkets: List[Market]
 
-  def getTickers: List[ExchangeModels.Ticker]
+  def getTickers: List[Ticker]
 
-  def getOrderBook(market: String): ExchangeModels.OrderBook
+  def getOrderBook(market: String): OrderBook
 
-  def getLastTrades(market: String): List[ExchangeModels.Trade]
+  def getLastTrades(market: String): List[Trade]
 
-  def sendOrder(market: String, side: String, price: BigDecimal, volume: BigDecimal): Unit
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit
 
   def cancelOrder(orderId: String): Unit
 
-  def getOpenOrders(market: String): List[ExchangeModels.Order]
+  def getOpenOrders(market: String): List[OpenOrder]
 
-  def getBalances: List[ExchangeModels.Balance]
+  def getBalances: List[Balance]
 }
