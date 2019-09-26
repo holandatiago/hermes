@@ -3,6 +3,7 @@ package hermes.exchanges
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.xml.bind.DatatypeConverter
+import spray.json._
 
 object utils {
   case class ApiKey(public: String, secret: String)
@@ -38,4 +39,11 @@ object utils {
           .getOrElse(throw new NoSuchElementException(s"OrderSide $side"))
     }
   }
+
+  implicit def readFunc2JsonFormat[T](implicit f: JsValue => T) = new RootJsonFormat[T] {
+    def write(obj: T) = JsNull
+    def read(json: JsValue) = f(json)
+  }
+
+  implicit val emptyCodec = DefaultJsonProtocol.jsonFormat0[Option[Nothing]](() => None)
 }

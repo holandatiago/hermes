@@ -33,7 +33,7 @@ object BittrexCodecs extends DefaultJsonProtocol {
     price = fromField[BigDecimal](json, "Rate"),
     volume = fromField[BigDecimal](json, "Quantity"))
 
-  implicit def orderBookCodec(json: JsValue) = OrderBook(
+  implicit def orderBookCodec(json: JsValue)(implicit jf: JsonFormat[OrderPage]) = OrderBook(
     buy = fromField[List[OrderPage]](json, "buy"),
     sell = fromField[List[OrderPage]](json, "sell"))
 
@@ -61,5 +61,5 @@ object BittrexCodecs extends DefaultJsonProtocol {
     available = fromField[BigDecimal](json, "Available"))
 
   case class Response[T](success: Boolean, message: String, result: Option[T])
-  implicit def responseCodec[T: JsonFormat] = jsonFormat3(Response[T])
+  implicit def responseCodec[T](implicit jf: JsonFormat[T]) = jsonFormat3(Response[T])
 }

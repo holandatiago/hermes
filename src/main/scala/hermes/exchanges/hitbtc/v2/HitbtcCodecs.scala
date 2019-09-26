@@ -33,7 +33,7 @@ object HitbtcCodecs extends DefaultJsonProtocol {
     price = fromField[BigDecimal](json, "price"),
     volume = fromField[BigDecimal](json, "size"))
 
-  implicit def orderBookCodec(json: JsValue) = OrderBook(
+  implicit def orderBookCodec(json: JsValue)(implicit jf: JsonFormat[OrderPage]) = OrderBook(
     buy = fromField[List[OrderPage]](json, "bid"),
     sell = fromField[List[OrderPage]](json, "ask"))
 

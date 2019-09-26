@@ -25,13 +25,6 @@ trait ExchangeClient {
   implicit val executionContext = system.dispatcher
   val http = Http()
 
-  implicit def readFunc2JsonFormat[T](implicit f: JsValue => T) = new RootJsonFormat[T] {
-    def write(obj: T) = JsNull
-    def read(json: JsValue) = f(json)
-  }
-
-  implicit val emptyCodec = DefaultJsonProtocol.jsonFormat0[Option[Nothing]](() => None)
-
   def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
   def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
 

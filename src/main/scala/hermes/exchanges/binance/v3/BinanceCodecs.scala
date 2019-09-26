@@ -33,7 +33,7 @@ object BinanceCodecs extends DefaultJsonProtocol {
     price = json.convertTo[List[BigDecimal]].head,
     volume = json.convertTo[List[BigDecimal]].last)
 
-  implicit def orderBookCodec(json: JsValue) = OrderBook(
+  implicit def orderBookCodec(json: JsValue)(implicit jf: JsonFormat[OrderPage]) = OrderBook(
     buy = fromField[List[OrderPage]](json, "bids"),
     sell = fromField[List[OrderPage]](json, "asks"))
 
@@ -61,8 +61,8 @@ object BinanceCodecs extends DefaultJsonProtocol {
     available = fromField[BigDecimal](json, "free"))
 
   case class ExchangeInfo(symbols: List[Market])
-  implicit val exchangeInfoCodec = jsonFormat1(ExchangeInfo)
+  implicit def exchangeInfoCodec(implicit jf: JsonFormat[Market]) = jsonFormat1(ExchangeInfo)
 
   case class AccountInfo(balances: List[Balance])
-  implicit val accountInfoCodec = jsonFormat1(AccountInfo)
+  implicit def accountInfoCodec(implicit jf: JsonFormat[Balance]) = jsonFormat1(AccountInfo)
 }
