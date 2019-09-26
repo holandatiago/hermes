@@ -1,8 +1,8 @@
-package com.cryptotrader.exchanges
+package hermes.exchanges
 
 import java.sql.Timestamp
 
-import com.cryptotrader.exchanges.utils.OrderSide
+import utils.OrderSide
 
 object ExchangeModels {
   case class Market(

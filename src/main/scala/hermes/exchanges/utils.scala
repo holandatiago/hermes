@@ -1,4 +1,4 @@
-package com.cryptotrader.exchanges
+package hermes.exchanges
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec

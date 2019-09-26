@@ -1,12 +1,12 @@
-package com.cryptotrader.exchanges
+package hermes.exchanges
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.utils._
-import spray.json.{JsonFormat, RootJsonFormat}
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.utils._
+import spray.json.RootJsonFormat
 
 import scala.concurrent._
 import scala.concurrent.duration._

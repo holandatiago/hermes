@@ -1,7 +1,7 @@
-package com.cryptotrader.bots
+package hermes.bots
 
-import com.cryptotrader.exchanges.ExchangeClient
-import com.cryptotrader.exchanges.ExchangeModels._
+import hermes.exchanges.ExchangeClient
+import hermes.exchanges.ExchangeModels.Market
 
 class SpreadBot(exchange: ExchangeClient) extends Runnable {
   def run(): Unit = {

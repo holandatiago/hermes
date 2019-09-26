@@ -1,13 +1,13 @@
-package com.cryptotrader.exchanges.bittrex.v1
+package hermes.exchanges.bittrex.v1
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import com.cryptotrader.exchanges.ExchangeClient
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.bittrex.v1.BittrexCodecs._
-import com.cryptotrader.exchanges.utils._
+import hermes.exchanges.ExchangeClient
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.bittrex.v1.BittrexCodecs._
+import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
 class BittrexClient(apiKey: ApiKey) extends ExchangeClient {

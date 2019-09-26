@@ -1,10 +1,10 @@
-package com.cryptotrader.exchanges.binance.v3
+package hermes.exchanges.binance.v3
 
 import java.sql.Timestamp
 
-import com.cryptotrader.exchanges.ExchangeCodecs
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.utils.OrderSide
+import hermes.exchanges.ExchangeCodecs
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.utils.OrderSide
 import spray.json._
 
 object BinanceCodecs extends ExchangeCodecs {

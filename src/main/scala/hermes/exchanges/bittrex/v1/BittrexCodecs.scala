@@ -1,10 +1,10 @@
-package com.cryptotrader.exchanges.bittrex.v1
+package hermes.exchanges.bittrex.v1
 
 import java.sql.Timestamp
 
-import com.cryptotrader.exchanges.ExchangeCodecs
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.utils.OrderSide
+import hermes.exchanges.ExchangeCodecs
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.utils.OrderSide
 import spray.json._
 
 object BittrexCodecs extends ExchangeCodecs {

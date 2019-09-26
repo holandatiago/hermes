@@ -1,13 +1,13 @@
-package com.cryptotrader.exchanges.hitbtc.v2
+package hermes.exchanges.hitbtc.v2
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import com.cryptotrader.exchanges.ExchangeClient
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.hitbtc.v2.HitbtcCodecs._
-import com.cryptotrader.exchanges.utils._
+import hermes.exchanges.ExchangeClient
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.hitbtc.v2.HitbtcCodecs._
+import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
 class HitbtcClient(apiKey: ApiKey) extends ExchangeClient {

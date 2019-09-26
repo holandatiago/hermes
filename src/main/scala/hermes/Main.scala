@@ -1,4 +1,4 @@
-package com.cryptotrader
+package hermes
 
 object Main extends App {
   /*val exchange = exchanges.Exchange()

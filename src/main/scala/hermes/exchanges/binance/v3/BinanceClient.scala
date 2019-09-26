@@ -1,13 +1,13 @@
-package com.cryptotrader.exchanges.binance.v3
+package hermes.exchanges.binance.v3
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import com.cryptotrader.exchanges.ExchangeClient
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.binance.v3.BinanceCodecs._
-import com.cryptotrader.exchanges.utils._
+import hermes.exchanges.ExchangeClient
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.binance.v3.BinanceCodecs._
+import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
 class BinanceClient(apiKey: ApiKey) extends ExchangeClient {

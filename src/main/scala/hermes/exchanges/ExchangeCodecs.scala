@@ -1,9 +1,9 @@
-package com.cryptotrader.exchanges
+package hermes.exchanges
 
 import java.sql.Timestamp
 
-import com.cryptotrader.exchanges.ExchangeModels._
-import com.cryptotrader.exchanges.utils.OrderSide
+import hermes.exchanges.ExchangeModels._
+import hermes.exchanges.utils.OrderSide
 import spray.json._
 
 trait ExchangeCodecs extends DefaultJsonProtocol {
