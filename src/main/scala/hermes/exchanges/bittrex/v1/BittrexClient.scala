@@ -16,11 +16,18 @@ class BittrexClient(apiKey: ApiKey) extends ExchangeClient {
   val path = "/api/v1.1"
 
   override def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
-    val apiKeyParams = Map("apiKey" -> apiKey.public, "nonce" -> System.currentTimeMillis())
-    val allParams = (params ++ apiKeyParams).mapValues(_.toString)
-    val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-    val headers = List(RawHeader("apisign", auth.generateHmac(uri.toString)))
-    HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+    route.head match {
+      case "public" =>
+        val allParams = params.mapValues(_.toString)
+        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+        HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
+      case _ =>
+        val apiKeyParams = Map("apiKey" -> apiKey.public, "nonce" -> System.currentTimeMillis())
+        val allParams = (params ++ apiKeyParams).mapValues(_.toString)
+        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+        val headers = List(RawHeader("apisign", auth.generateHmac(uri.toString)))
+        HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+    }
   }
 
   override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {

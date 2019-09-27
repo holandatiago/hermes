@@ -16,11 +16,18 @@ class BinanceClient(apiKey: ApiKey) extends ExchangeClient {
   val path = "/api"
 
   override def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
-    val totalParams = (params + ("timestamp" -> System.currentTimeMillis())).mapValues(_.toString)
-    val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
-    val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-    val headers = List(RawHeader("X-MBX-APIKEY", apiKey.public))
-    HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+    route.head match {
+      case "v1" =>
+        val allParams = params.mapValues(_.toString)
+        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+        HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
+      case "v3" =>
+        val totalParams = (params + ("timestamp" -> System.currentTimeMillis())).mapValues(_.toString)
+        val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
+        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+        val headers = List(RawHeader("X-MBX-APIKEY", apiKey.public))
+        HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+    }
   }
 
   override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {

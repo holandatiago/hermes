@@ -16,10 +16,18 @@ class HitbtcClient(apiKey: ApiKey) extends ExchangeClient {
   val path = "/api/2"
 
   override def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
-    val allParams = params.mapValues(_.toString)
-    val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-    val headers = List(auth)
-    HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+    route.head match {
+      case "public" =>
+        val allParams = params.mapValues(_.toString)
+        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+        HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
+      case _ =>
+        val totalParams = params.mapValues(_.toString)
+        val allParams = totalParams
+        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+        val headers = List(auth)
+        HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+    }
   }
 
   override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
