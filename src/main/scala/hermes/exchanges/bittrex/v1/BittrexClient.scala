@@ -24,7 +24,10 @@ class BittrexClient(apiKey: ApiKey) extends ExchangeClient {
   }
 
   override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
-    Unmarshal(response).to[Response[T]].map(_.result.get)
+    Unmarshal(response).to[Response[T]].map {
+      case Response(true, _, result) => result.get
+      case Response(false, msg, _) => sys.error(msg)
+    }
   }
 
   def getMarkets: List[Market] =

@@ -59,4 +59,10 @@ object HitbtcCodecs extends DefaultJsonProtocol {
     currency = fromField[String](json, "currency"),
     reserved = fromField[BigDecimal](json, "reserved"),
     available = fromField[BigDecimal](json, "available"))
+
+  case class Error(code: Int, message: String, description: Option[String])
+  implicit def errorCodec = jsonFormat3(Error)
+
+  case class ErrorResponse(error: Error)
+  implicit def errorResponseCodec(implicit jf: JsonFormat[Error]) = jsonFormat1(ErrorResponse)
 }

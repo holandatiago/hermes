@@ -24,7 +24,10 @@ class BinanceClient(apiKey: ApiKey) extends ExchangeClient {
   }
 
   override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
-    Unmarshal(response).to[T]
+    response match {
+      case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
+      case _ => Unmarshal(response).to[Error].map(e => sys.error(e.msg))
+    }
   }
 
   def getMarkets: List[Market] =

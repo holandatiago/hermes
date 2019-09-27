@@ -65,4 +65,7 @@ object BinanceCodecs extends DefaultJsonProtocol {
 
   case class AccountInfo(balances: List[Balance])
   implicit def accountInfoCodec(implicit jf: JsonFormat[Balance]) = jsonFormat1(AccountInfo)
+
+  case class Error(code: Int, msg: String)
+  implicit def errorCodec = jsonFormat2(Error)
 }

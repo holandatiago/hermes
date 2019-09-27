@@ -12,7 +12,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 object ExchangeClient {
-  def apply(name: String, apiKey: ApiKey): ExchangeClient = name match {
+  def apply(name: String, apiKey: ApiKey): ExchangeClient = name.toLowerCase match {
     case "binance" => new binance.v3.BinanceClient(apiKey)
     case "bittrex" => new bittrex.v1.BittrexClient(apiKey)
     case "hitbtc" => new hitbtc.v2.HitbtcClient(apiKey)
