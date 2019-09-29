@@ -8,9 +8,10 @@ object ExchangeModels {
       baseCurrency: String,
       quoteCurrency: String,
       minPrice: BigDecimal,
-      minVolume: BigDecimal,
       tickPrice: BigDecimal,
-      tickVolume: BigDecimal,
+      minBaseVolume: BigDecimal,
+      tickBaseVolume: BigDecimal,
+      minQuoteVolume: BigDecimal,
       active: Boolean)
 
   case class Ticker(
@@ -72,6 +73,18 @@ object ExchangeModels {
     def apply(side: String): OrderSide = {
       List(Buy, Sell).find(_.toString.toLowerCase == side.toLowerCase)
           .getOrElse(throw new NoSuchElementException(s"OrderSide $side"))
+    }
+  }
+
+  sealed trait OrderStatus
+
+  object OrderStatus {
+    case object New extends OrderStatus
+    case object Rola extends OrderStatus
+
+    def apply(status: String): OrderStatus = {
+      List(New, Rola).find(_.toString.toLowerCase == status.toLowerCase)
+          .getOrElse(throw new NoSuchElementException(s"OrderStatus $status"))
     }
   }
 }

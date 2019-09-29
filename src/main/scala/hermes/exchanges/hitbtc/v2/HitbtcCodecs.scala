@@ -11,9 +11,10 @@ object HitbtcCodecs extends DefaultJsonProtocol {
     baseCurrency = fromField[String](json, "baseCurrency"),
     quoteCurrency = fromField[String](json, "quoteCurrency"),
     minPrice = BigDecimal(0),
-    minVolume = BigDecimal(0),
     tickPrice = fromField[BigDecimal](json, "tickSize"),
-    tickVolume = fromField[BigDecimal](json, "quantityIncrement"),
+    minBaseVolume = BigDecimal(0),
+    tickBaseVolume = fromField[BigDecimal](json, "quantityIncrement"),
+    minQuoteVolume = BigDecimal(0),
     active = fromField[Boolean](json, "IsActive"))
 
   implicit def tickerCodec(json: JsValue) = Ticker(

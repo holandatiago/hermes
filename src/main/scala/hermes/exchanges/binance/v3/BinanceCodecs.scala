@@ -6,14 +6,15 @@ import hermes.exchanges.ExchangeModels._
 import spray.json._
 
 object BinanceCodecs extends DefaultJsonProtocol {
-  implicit def marketCodec(json: JsValue) = Market(
+  implicit def marketCodec(json: JsValue)(implicit jf: JsonFormat[Filter]) = Market(
     name = fromField[String](json, "symbol"),
     baseCurrency = fromField[String](json, "baseAsset"),
     quoteCurrency = fromField[String](json, "quoteAsset"),
-    minPrice = BigDecimal(0),
-    minVolume = BigDecimal(0),
-    tickPrice = BigDecimal(1, fromField[Int](json, "baseAssetPrecision")),
-    tickVolume = BigDecimal(1, fromField[Int](json, "quotePrecision")),
+    minPrice = fromField[List[Filter]](json, "filters").find(_.filterType == "PRICE_FILTER").get.minPrice.get,
+    tickPrice = fromField[List[Filter]](json, "filters").find(_.filterType == "PRICE_FILTER").get.tickSize.get,
+    minBaseVolume = fromField[List[Filter]](json, "filters").find(_.filterType == "LOT_SIZE").get.minQty.get,
+    tickBaseVolume = fromField[List[Filter]](json, "filters").find(_.filterType == "LOT_SIZE").get.stepSize.get,
+    minQuoteVolume = fromField[List[Filter]](json, "filters").find(_.filterType == "MIN_NOTIONAL").get.minNotional.get,
     active = fromField[String](json, "status") == "TRADING")
 
   implicit def tickerCodec(json: JsValue) = Ticker(
@@ -61,6 +62,15 @@ object BinanceCodecs extends DefaultJsonProtocol {
 
   case class ExchangeInfo(symbols: List[Market])
   implicit def exchangeInfoCodec(implicit jf: JsonFormat[Market]) = jsonFormat1(ExchangeInfo)
+
+  case class Filter(
+      filterType: String,
+      minPrice: Option[BigDecimal],
+      tickSize: Option[BigDecimal],
+      minQty: Option[BigDecimal],
+      stepSize: Option[BigDecimal],
+      minNotional: Option[BigDecimal])
+  implicit def filterCodec = jsonFormat6(Filter)
 
   case class AccountInfo(balances: List[Balance])
   implicit def accountInfoCodec(implicit jf: JsonFormat[Balance]) = jsonFormat1(AccountInfo)

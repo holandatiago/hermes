@@ -11,9 +11,10 @@ object BittrexCodecs extends DefaultJsonProtocol {
     baseCurrency = fromField[String](json, "MarketCurrency"),
     quoteCurrency = fromField[String](json, "BaseCurrency"),
     minPrice = fromField[BigDecimal](json, "MinTradeSize"),
-    minVolume = fromField[BigDecimal](json, ""),
     tickPrice = fromField[BigDecimal](json, ""),
-    tickVolume = fromField[BigDecimal](json, ""),
+    minBaseVolume = fromField[BigDecimal](json, ""),
+    tickBaseVolume = fromField[BigDecimal](json, ""),
+    minQuoteVolume = BigDecimal(0),
     active = fromField[Boolean](json, "IsActive"))
 
   implicit def tickerCodec(json: JsValue) = Ticker(
