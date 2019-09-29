@@ -19,25 +19,24 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
   protected val host = "https://api.hitbtc.com"
   protected val path = "/api/2"
 
-  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
-    route.head match {
-      case "public" =>
-        val allParams = params.mapValues(_.toString)
-        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
-      case _ =>
-        val allParams = params.mapValues(_.toString)
-        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        val entity = if (method != "POST") HttpEntity.Empty
-        else HttpEntity(ContentTypes.`application/x-www-form-urlencoded`, Uri.Query(allParams).toString)
-        HttpRequest(HttpMethods.getForKey(method).get, uri, List(auth), entity)
-    }
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
+    case "public" =>
+      val allParams = params.mapValues(_.toString)
+      val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+      HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
+    case _ =>
+      val allParams = params.mapValues(_.toString)
+      val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+      val entity = if (method != "POST") HttpEntity.Empty
+      else HttpEntity(ContentTypes.`application/x-www-form-urlencoded`, Uri.Query(allParams).toString)
+      HttpRequest(HttpMethods.getForKey(method).get, uri, List(auth), entity)
   }
 
-  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
-    response match {
-      case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
-      case _ => Unmarshal(response).to[ErrorResponse].map(e => sys.error(e.error.message))
+  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = response match {
+    case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
+    case _ => Unmarshal(response).to[ErrorResponse].map {
+      case ErrorResponse(Error(20002, "Order not found", _)) => None.asInstanceOf[T]
+      case ErrorResponse(Error(_, message, _)) => sys.error(message)
     }
   }
 
@@ -59,9 +58,9 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("order"), Map("symbol" -> market))
 
-  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit =
-    makeRequest[Option[Nothing]]("POST", List("order"), Map("symbol" -> market.toLowerCase, "type" -> "limit",
-      "timeInForce" -> "GTC", "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume))
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): String =
+    makeRequest[OpenOrder]("POST", List("order"), Map("symbol" -> market.toLowerCase, "type" -> "limit",
+      "timeInForce" -> "GTC", "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume)).id
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("DELETE", List("order", orderId))

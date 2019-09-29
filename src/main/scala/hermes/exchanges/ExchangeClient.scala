@@ -63,7 +63,7 @@ trait ExchangeClient {
 
   protected def printResponse(response: HttpResponse): Future[HttpResponse] = {
     response.entity.toStrict(Duration(30, SECONDS)).map { cachedEntity =>
-      cachedEntity.dataBytes.runFold(ByteString(""))(_ ++ _).map(_.utf8String).foreach(println)
+      cachedEntity.dataBytes.runFold(ByteString(response.status.toString))(_ ++ _).map(_.utf8String).foreach(println)
       response.copy(entity = cachedEntity)
     }
   }
@@ -87,7 +87,7 @@ trait ExchangeClient {
 
   def getOpenOrders(market: String): List[OpenOrder]
 
-  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): String
 
   def cancelOrder(orderId: String): Unit
 }

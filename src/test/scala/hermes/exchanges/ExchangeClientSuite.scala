@@ -110,13 +110,15 @@ class ExchangeClientSuite extends FunSpec {
       }
     }
 
-    val sendOrderTry = Try(client.sendOrder(side = OrderSide.Buy,
-      market = mainMarketOption.get.name, price = BigDecimal("0.01"), volume = BigDecimal("0.05")))
+    val sendOrderTry = Try(client.sendOrder(market = mainMarketOption.get.name,
+      side = OrderSide.Buy, price = BigDecimal("0.01"), volume = BigDecimal("0.05")))
     val ordersSentTry = Try(client.getOpenOrders(mainMarketOption.get.name))
     val orderSentOption = ordersSentTry.toOption.flatMap(_.headOption)
     describe("sendOrder") {
       it("should call sendOrder with no errors.") {
         assume(mainMarketOption.isDefined)
+        assume(mainBalanceOption.isDefined)
+        assume(mainBalanceOption.get.available >= BigDecimal("0.0005"))
         assert(sendOrderTry.isSuccess)
       }
       it("should call getOpenOrders with no errors.") {
@@ -131,17 +133,18 @@ class ExchangeClientSuite extends FunSpec {
       it("order sent is the expected one.") {
         assume(sendOrderTry.isSuccess)
         assume(ordersSentTry.isSuccess)
-        assume(mainMarketOption.isDefined)
         assert(orderSentOption.isDefined)
+        assert(orderSentOption.get.id == sendOrderTry.get)
+        assert(orderSentOption.get.market == mainMarketOption.get.name)
         assert(orderSentOption.get.side == OrderSide.Buy)
         assert(orderSentOption.get.price == BigDecimal("0.01"))
         assert(orderSentOption.get.volume == BigDecimal("0.05"))
         assert(orderSentOption.get.remainingVolume == BigDecimal("0.05"))
-        assert(orderSentOption.get.market == mainMarketOption.get.name)
       }
     }
 
     val cancelOrderTry = Try(client.cancelOrder(orderSentOption.get.id))
+    val cancelAgainOrderTry = Try(client.cancelOrder(orderSentOption.get.id))
     val ordersCancelledTry = Try(client.getOpenOrders(mainMarketOption.get.name))
     describe("cancelOrder") {
       it("should call cancelOrder with no errors.") {
@@ -156,6 +159,10 @@ class ExchangeClientSuite extends FunSpec {
         assume(cancelOrderTry.isSuccess)
         assume(ordersCancelledTry.isSuccess)
         assert(ordersCancelledTry.get.isEmpty)
+      }
+      it("cancel order too late should not break.") {
+        assume(cancelOrderTry.isSuccess)
+        assert(cancelAgainOrderTry.isSuccess)
       }
     }
   }

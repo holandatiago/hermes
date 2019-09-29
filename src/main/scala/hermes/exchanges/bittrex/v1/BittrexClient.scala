@@ -19,24 +19,23 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
   protected val host = "https://api.bittrex.com"
   protected val path = "/api/v1.1"
 
-  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
-    route.head match {
-      case "public" =>
-        val allParams = params.mapValues(_.toString)
-        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
-      case _ =>
-        val apiKeyParams = Map("apiKey" -> apiKey.public, "nonce" -> System.currentTimeMillis())
-        val allParams = (params ++ apiKeyParams).mapValues(_.toString)
-        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        val headers = List(RawHeader("apisign", auth.generateHmac(uri.toString)))
-        HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
-    }
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
+    case "public" =>
+      val allParams = params.mapValues(_.toString)
+      val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+      HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
+    case _ =>
+      val apiKeyParams = Map("apiKey" -> apiKey.public, "nonce" -> System.currentTimeMillis())
+      val allParams = (params ++ apiKeyParams).mapValues(_.toString)
+      val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+      val headers = List(RawHeader("apisign", auth.generateHmac(uri.toString)))
+      HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
   }
 
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
     Unmarshal(response).to[Response[T]].map {
-      case Response(true, _, result) => result.getOrElse(null.asInstanceOf[T])
+      case Response(true, _, result) => result.getOrElse(None.asInstanceOf[T])
+      case Response(false, "ORDER_NOT_OPEN", _) => None.asInstanceOf[T]
       case Response(false, msg, _) => sys.error(msg)
     }
   }
@@ -59,9 +58,9 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("market", "getopenorders"), Map("market" -> market))
 
-  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit =
-    makeRequest[Option[Nothing]]("GET", List("market", side.toString.toLowerCase + "limit"),
-      Map("market" -> market, "timeInForce" -> "GTC", "rate" -> price, "quantity" -> volume))
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): String =
+    makeRequest[Uuid]("GET", List("market", side.toString.toLowerCase + "limit"),
+      Map("market" -> market, "timeInForce" -> "GTC", "rate" -> price, "quantity" -> volume)).uuid
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("GET", List("market", "cancel"), Map("uuid" -> orderId))

@@ -19,25 +19,24 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
   protected val host = "https://api.binance.com"
   protected val path = "/api"
 
-  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
-    route.head match {
-      case "v1" =>
-        val allParams = params.mapValues(_.toString)
-        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
-      case "v3" =>
-        val totalParams = (params + ("timestamp" -> System.currentTimeMillis())).mapValues(_.toString)
-        val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
-        val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        val headers = List(RawHeader("X-MBX-APIKEY", apiKey.public))
-        HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
-    }
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
+    case "v1" =>
+      val allParams = params.mapValues(_.toString)
+      val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+      HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
+    case "v3" =>
+      val totalParams = (params + ("timestamp" -> System.currentTimeMillis())).mapValues(_.toString)
+      val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
+      val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
+      val headers = List(RawHeader("X-MBX-APIKEY", apiKey.public))
+      HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
   }
 
-  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
-    response match {
-      case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
-      case _ => Unmarshal(response).to[Error].map(e => sys.error(e.msg))
+  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = response match {
+    case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
+    case _ => Unmarshal(response).to[Error].map {
+      case Error(-2011, "Unknown order sent.") => None.asInstanceOf[T]
+      case Error(_, message) => sys.error(message)
     }
   }
 
@@ -59,9 +58,9 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("v3", "openOrders"), Map("symbol" -> market))
 
-  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit =
-    makeRequest[Option[Nothing]]("POST", List("v3", "order"), Map("symbol" -> market, "type" -> "LIMIT",
-      "timeInForce" -> "GTC", "side" -> side.toString.toUpperCase, "price" -> price, "quantity" -> volume))
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): String =
+    makeRequest[OpenOrder]("POST", List("v3", "order"), Map("symbol" -> market, "type" -> "LIMIT",
+      "timeInForce" -> "GTC", "side" -> side.toString.toUpperCase, "price" -> price, "quantity" -> volume)).id
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("DELETE", List("v3", "order"),

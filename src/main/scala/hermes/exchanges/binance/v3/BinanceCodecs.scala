@@ -51,7 +51,7 @@ object BinanceCodecs extends DefaultJsonProtocol {
     price = fromField[BigDecimal](json, "price"),
     volume = fromField[BigDecimal](json, "origQty"),
     remainingVolume = fromField[BigDecimal](json, "origQty") - fromField[BigDecimal](json, "executedQty"),
-    timestamp = Instant.ofEpochMilli(fromField[Long](json, "time")))
+    timestamp = Instant.ofEpochMilli(fromField[Option[Long]](json, "time").getOrElse(0L)))
 
   implicit def balanceCodec(json: JsValue) = Balance(
     currency = fromField[String](json, "asset"),
