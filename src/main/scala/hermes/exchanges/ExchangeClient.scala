@@ -87,7 +87,7 @@ trait ExchangeClient {
 
   def getOpenOrders(market: String): List[OpenOrder]
 
-  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit
+  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit
 
   def cancelOrder(orderId: String): Unit
 }

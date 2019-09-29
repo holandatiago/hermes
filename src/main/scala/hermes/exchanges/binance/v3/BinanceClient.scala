@@ -59,7 +59,7 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("v3", "openOrders"), Map("symbol" -> market))
 
-  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
+  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("POST", List("v3", "order"), Map("symbol" -> market, "type" -> "LIMIT",
       "timeInForce" -> "GTC", "side" -> side.toString.toUpperCase, "price" -> price, "quantity" -> volume))
 

@@ -59,7 +59,7 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("order"), Map("symbol" -> market))
 
-  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
+  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("POST", List("order"), Map("symbol" -> market.toLowerCase, "type" -> "limit",
       "timeInForce" -> "GTC", "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume))
 

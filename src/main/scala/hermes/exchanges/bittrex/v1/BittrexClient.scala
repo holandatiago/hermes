@@ -59,7 +59,7 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("market", "getopenorders"), Map("market" -> market))
 
-  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
+  def sendOrder(side: OrderSide, market: String, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("GET", List("market", side.toString.toLowerCase + "limit"),
       Map("market" -> market, "timeInForce" -> "GTC", "rate" -> price, "quantity" -> volume))
 
