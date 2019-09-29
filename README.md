@@ -1,1 +1,1 @@
-# crypto-trader
+# Hermes

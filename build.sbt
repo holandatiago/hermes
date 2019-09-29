@@ -1,4 +1,4 @@
-name := "CryptoTrader"
+name := "Hermes"
 
 version := "0.1"
 
