@@ -8,8 +8,8 @@ import spray.json._
 object BittrexCodecs extends DefaultJsonProtocol {
   implicit def marketCodec(json: JsValue) = Market(
     name = fromField[String](json, "MarketName"),
-    baseCurrency = fromField[String](json, "BaseCurrency"),
-    quoteCurrency = fromField[String](json, "MarketCurrency"),
+    baseCurrency = fromField[String](json, "MarketCurrency"),
+    quoteCurrency = fromField[String](json, "BaseCurrency"),
     minPrice = fromField[BigDecimal](json, "MinTradeSize"),
     minVolume = fromField[BigDecimal](json, ""),
     tickPrice = fromField[BigDecimal](json, ""),
@@ -24,8 +24,8 @@ object BittrexCodecs extends DefaultJsonProtocol {
     high = fromField[BigDecimal](json, "High"),
     low = fromField[BigDecimal](json, "Low"),
     last = fromField[BigDecimal](json, "Last"),
-    baseVolume = fromField[BigDecimal](json, "BaseVolume"),
-    quoteVolume = fromField[BigDecimal](json, "Volume"),
+    baseVolume = fromField[BigDecimal](json, "Volume"),
+    quoteVolume = fromField[BigDecimal](json, "BaseVolume"),
     timestamp = Timestamp.valueOf(fromField[String](json, "TimeStamp")))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(
