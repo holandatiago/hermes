@@ -49,6 +49,12 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
   def getLastTrades(market: String): List[Trade] =
     makeRequest[List[Trade]]("GET", List("v1", "trades"), Map("symbol" -> market, "limit" -> 100))
 
+  def getBalances: List[Balance] =
+    makeRequest[AccountInfo]("GET", List("v3", "account")).balances
+
+  def getOpenOrders(market: String): List[OpenOrder] =
+    makeRequest[List[OpenOrder]]("GET", List("v3", "openOrders"), Map("symbol" -> market))
+
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("POST", List("v3", "order"), Map("symbol" -> market, "type" -> "LIMIT",
       "timeInForce" -> "GTC", "side" -> side.toString.toUpperCase, "price" -> price, "quantity" -> volume))
@@ -56,10 +62,4 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("DELETE", List("v3", "order"),
       Map("symbol" -> orderId.split(" ").head, "orderId" -> orderId.split(" ").last))
-
-  def getOpenOrders(market: String): List[OpenOrder] =
-    makeRequest[List[OpenOrder]]("GET", List("v3", "openOrders"), Map("symbol" -> market))
-
-  def getBalances: List[Balance] =
-    makeRequest[AccountInfo]("GET", List("v3", "account")).balances
 }

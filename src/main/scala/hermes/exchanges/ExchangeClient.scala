@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
+import akka.util.ByteString
 import hermes.exchanges.ExchangeModels._
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -58,10 +59,17 @@ trait ExchangeClient {
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
 
+  protected def printResponse(response: HttpResponse): Future[HttpResponse] = {
+    response.entity.toStrict(Duration(30, SECONDS)).map { cachedEntity =>
+      cachedEntity.dataBytes.runFold(ByteString(""))(_ ++ _).map(_.utf8String).foreach(println)
+      response.copy(entity = cachedEntity)
+    }
+  }
+
   def makeRequest[T: RootJsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
     val httpRequest = buildHttpRequest(method, route, params)
-    val httpResponse = http.singleRequest(httpRequest)
-    val response = httpResponse.flatMap(handleHttpResponse[T])
+    val httpResponseFuture = http.singleRequest(httpRequest)
+    val response = httpResponseFuture.flatMap(printResponse).flatMap(handleHttpResponse[T])
     Await.result(response, Duration(30, SECONDS))
   }
 
@@ -73,11 +81,11 @@ trait ExchangeClient {
 
   def getLastTrades(market: String): List[Trade]
 
-  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit
-
-  def cancelOrder(orderId: String): Unit
+  def getBalances: List[Balance]
 
   def getOpenOrders(market: String): List[OpenOrder]
 
-  def getBalances: List[Balance]
+  def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit
+
+  def cancelOrder(orderId: String): Unit
 }

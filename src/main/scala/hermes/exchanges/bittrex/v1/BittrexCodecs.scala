@@ -48,7 +48,7 @@ object BittrexCodecs extends DefaultJsonProtocol {
     id = fromField[String](json, "OrderUuid"),
     market = fromField[String](json, "Exchange"),
     side = OrderSide(fromField[String](json, "OrderType").substring(6)),
-    price = fromField[BigDecimal](json, "Price"),
+    price = fromField[BigDecimal](json, "Limit"),
     volume = fromField[BigDecimal](json, "Quantity"),
     remainingVolume = fromField[BigDecimal](json, "QuantityRemaining"),
     timestamp = LocalDateTime.parse(fromField[String](json, "Opened")).toInstant(ZoneOffset.UTC))

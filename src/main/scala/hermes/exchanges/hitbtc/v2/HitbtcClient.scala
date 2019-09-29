@@ -49,17 +49,16 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
   def getLastTrades(market: String): List[Trade] =
     makeRequest[List[Trade]]("GET", List("public", "trades", market), Map("limit" -> 100, "sort" -> "ASC"))
 
+  def getBalances: List[Balance] =
+    makeRequest[List[Balance]]("GET", List("trading", "balance"))
+
+  def getOpenOrders(market: String): List[OpenOrder] =
+    makeRequest[List[OpenOrder]]("GET", List("order"), Map("symbol" -> market))
+
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("POST", List("order"), Map("symbol" -> market.toLowerCase, "type" -> "limit",
       "timeInForce" -> "GTC", "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume))
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("DELETE", List("order", orderId))
-
-
-  def getOpenOrders(market: String): List[OpenOrder] =
-    makeRequest[List[OpenOrder]]("GET", List("order"), Map("symbol" -> market))
-
-  def getBalances: List[Balance] =
-    makeRequest[List[Balance]]("GET", List("trading", "balance"))
 }
