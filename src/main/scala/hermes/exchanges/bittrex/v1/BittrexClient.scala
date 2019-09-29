@@ -32,7 +32,7 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
 
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
     Unmarshal(response).to[Response[T]].map {
-      case Response(true, _, result) => result.get
+      case Response(true, _, result) => result.orNull
       case Response(false, msg, _) => sys.error(msg)
     }
   }
@@ -44,11 +44,10 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
     makeRequest[List[Ticker]]("GET", List("public", "getmarketsummaries"))
 
   def getOrderBook(market: String): OrderBook =
-    makeRequest[OrderBook]("GET", List("public", "getorderbook"),
-      Map("market" -> market, "type" -> "both"))
+    makeRequest[OrderBook]("GET", List("public", "getorderbook"), Map("market" -> market, "type" -> "both"))
 
   def getLastTrades(market: String): List[Trade] =
-    makeRequest[List[Trade]]("GET", List("public", "getmarkethistory"), Map("market" -> market))
+    makeRequest[List[Trade]]("GET", List("public", "getmarkethistory"), Map("market" -> market)).sortBy(_.id)
 
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("GET", List("market", side.toString.toLowerCase + "limit"),
@@ -56,6 +55,7 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("GET", List("market", "cancel"), Map("uuid" -> orderId))
+
 
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("market", "getopenorders"), Map("market" -> market))

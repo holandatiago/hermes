@@ -44,10 +44,10 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
     makeRequest[List[Ticker]]("GET", List("v1", "ticker", "24hr"))
 
   def getOrderBook(market: String): OrderBook =
-    makeRequest[OrderBook]("GET", List("v1", "depth"), Map("symbol" -> market))
+    makeRequest[OrderBook]("GET", List("v1", "depth"), Map("symbol" -> market, "limit" -> 100))
 
   def getLastTrades(market: String): List[Trade] =
-    makeRequest[List[Trade]]("GET", List("v1", "trades"), Map("symbol" -> market))
+    makeRequest[List[Trade]]("GET", List("v1", "trades"), Map("symbol" -> market, "limit" -> 100))
 
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("POST", List("v3", "order"), Map("symbol" -> market, "type" -> "LIMIT",

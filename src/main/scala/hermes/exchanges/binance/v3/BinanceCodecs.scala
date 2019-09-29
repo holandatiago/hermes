@@ -19,14 +19,14 @@ object BinanceCodecs extends DefaultJsonProtocol {
 
   implicit def tickerCodec(json: JsValue) = Ticker(
     market = fromField[String](json, "symbol"),
-    ask = fromField[BigDecimal](json, "askPrice"),
-    bid = fromField[BigDecimal](json, "bidPrice"),
-    open = fromField[BigDecimal](json, "openPrice"),
-    high = fromField[BigDecimal](json, "highPrice"),
-    low = fromField[BigDecimal](json, "lowPrice"),
-    last = fromField[BigDecimal](json, "lastPrice"),
-    baseVolume = fromField[BigDecimal](json, "volume"),
-    quoteVolume = fromField[BigDecimal](json, "quoteVolume"),
+    ask = fromField[Option[BigDecimal]](json, "askPrice").getOrElse(BigDecimal(0)),
+    bid = fromField[Option[BigDecimal]](json, "bidPrice").getOrElse(BigDecimal(0)),
+    open = fromField[Option[BigDecimal]](json, "openPrice").getOrElse(BigDecimal(0)),
+    high = fromField[Option[BigDecimal]](json, "highPrice").getOrElse(BigDecimal(0)),
+    low = fromField[Option[BigDecimal]](json, "lowPrice").getOrElse(BigDecimal(0)),
+    last = fromField[Option[BigDecimal]](json, "lastPrice").getOrElse(BigDecimal(0)),
+    baseVolume = fromField[Option[BigDecimal]](json, "volume").getOrElse(BigDecimal(0)),
+    quoteVolume = fromField[Option[BigDecimal]](json, "quoteVolume").getOrElse(BigDecimal(0)),
     timestamp = Instant.ofEpochMilli(fromField[Long](json, "closeTime")))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(
@@ -45,7 +45,7 @@ object BinanceCodecs extends DefaultJsonProtocol {
     side = if (fromField[Boolean](json, "isBuyerMaker")) OrderSide.Buy else OrderSide.Sell)
 
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
-    id = fromField[String](json, "symbol") + " " + fromField[String](json, "orderId"),
+    id = fromField[String](json, "symbol") + " " + fromField[Long](json, "orderId"),
     market = fromField[String](json, "symbol"),
     side = OrderSide(fromField[String](json, "side")),
     price = fromField[BigDecimal](json, "price"),

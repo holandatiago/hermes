@@ -19,14 +19,14 @@ object BittrexCodecs extends DefaultJsonProtocol {
 
   implicit def tickerCodec(json: JsValue) = Ticker(
     market = fromField[String](json, "MarketName"),
-    ask = fromField[BigDecimal](json, "Ask"),
-    bid = fromField[BigDecimal](json, "Bid"),
-    open = fromField[BigDecimal](json, "PrevDay"),
-    high = fromField[BigDecimal](json, "High"),
-    low = fromField[BigDecimal](json, "Low"),
-    last = fromField[BigDecimal](json, "Last"),
-    baseVolume = fromField[BigDecimal](json, "Volume"),
-    quoteVolume = fromField[BigDecimal](json, "BaseVolume"),
+    ask = fromField[Option[BigDecimal]](json, "Ask").getOrElse(BigDecimal(0)),
+    bid = fromField[Option[BigDecimal]](json, "Bid").getOrElse(BigDecimal(0)),
+    open = fromField[Option[BigDecimal]](json, "PrevDay").getOrElse(BigDecimal(0)),
+    high = fromField[Option[BigDecimal]](json, "High").getOrElse(BigDecimal(0)),
+    low = fromField[Option[BigDecimal]](json, "Low").getOrElse(BigDecimal(0)),
+    last = fromField[Option[BigDecimal]](json, "Last").getOrElse(BigDecimal(0)),
+    baseVolume = fromField[Option[BigDecimal]](json, "Volume").getOrElse(BigDecimal(0)),
+    quoteVolume = fromField[Option[BigDecimal]](json, "BaseVolume").getOrElse(BigDecimal(0)),
     timestamp = LocalDateTime.parse(fromField[String](json, "TimeStamp")).toInstant(ZoneOffset.UTC))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(

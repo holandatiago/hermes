@@ -19,14 +19,14 @@ object HitbtcCodecs extends DefaultJsonProtocol {
 
   implicit def tickerCodec(json: JsValue) = Ticker(
     market = fromField[String](json, "symbol"),
-    ask = fromField[BigDecimal](json, "ask"),
-    bid = fromField[BigDecimal](json, "bid"),
-    open = fromField[BigDecimal](json, "open"),
-    high = fromField[BigDecimal](json, "high"),
-    low = fromField[BigDecimal](json, "low"),
-    last = fromField[BigDecimal](json, "last"),
-    baseVolume = fromField[BigDecimal](json, "volume"),
-    quoteVolume = fromField[BigDecimal](json, "volumeQuote"),
+    ask = fromField[Option[BigDecimal]](json, "ask").getOrElse(BigDecimal(0)),
+    bid = fromField[Option[BigDecimal]](json, "bid").getOrElse(BigDecimal(0)),
+    open = fromField[Option[BigDecimal]](json, "open").getOrElse(BigDecimal(0)),
+    high = fromField[Option[BigDecimal]](json, "high").getOrElse(BigDecimal(0)),
+    low = fromField[Option[BigDecimal]](json, "low").getOrElse(BigDecimal(0)),
+    last = fromField[Option[BigDecimal]](json, "last").getOrElse(BigDecimal(0)),
+    baseVolume = fromField[Option[BigDecimal]](json, "volume").getOrElse(BigDecimal(0)),
+    quoteVolume = fromField[Option[BigDecimal]](json, "volumeQuote").getOrElse(BigDecimal(0)),
     timestamp = Instant.parse(fromField[String](json, "timestamp")))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(

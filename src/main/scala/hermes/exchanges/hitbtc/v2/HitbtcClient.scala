@@ -22,11 +22,11 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
         val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
         HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
       case _ =>
-        val totalParams = params.mapValues(_.toString)
-        val allParams = totalParams
+        val allParams = params.mapValues(_.toString)
         val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-        val headers = List(auth)
-        HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
+        val entity = if (method != "POST") HttpEntity.Empty
+        else HttpEntity(ContentTypes.`application/x-www-form-urlencoded`, Uri.Query(allParams).toString)
+        HttpRequest(HttpMethods.getForKey(method).get, uri, List(auth), entity)
     }
   }
 
@@ -44,17 +44,18 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
     makeRequest[List[Ticker]]("GET", List("public", "ticker"))
 
   def getOrderBook(market: String): OrderBook =
-    makeRequest[OrderBook]("GET", List("public", "orderbook", market))
+    makeRequest[OrderBook]("GET", List("public", "orderbook", market), Map("limit" -> 100))
 
   def getLastTrades(market: String): List[Trade] =
-    makeRequest[List[Trade]]("GET", List("public", "trades", market))
+    makeRequest[List[Trade]]("GET", List("public", "trades", market), Map("limit" -> 100, "sort" -> "ASC"))
 
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
-    makeRequest[Option[Nothing]]("POST", List("order"),
-      Map("symbol" -> market, "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume))
+    makeRequest[Option[Nothing]]("POST", List("order"), Map("symbol" -> market.toLowerCase, "type" -> "limit",
+      "timeInForce" -> "GTC", "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume))
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("DELETE", List("order", orderId))
+
 
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("order"), Map("symbol" -> market))
