@@ -40,7 +40,7 @@ object BinanceCodecs extends DefaultJsonProtocol {
   implicit def tradeCodec(json: JsValue) = Trade(
     id = fromField[Long](json, "id"),
     price = fromField[BigDecimal](json, "price"),
-    volume = fromField[BigDecimal](json, "quoteQty"),
+    volume = fromField[BigDecimal](json, "qty"),
     timestamp = new Timestamp(fromField[Long](json, "time")),
     side = if (fromField[Boolean](json, "isBuyerMaker")) OrderSide.Buy else OrderSide.Sell)
 

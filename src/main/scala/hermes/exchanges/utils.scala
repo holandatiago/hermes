@@ -19,19 +19,17 @@ object utils {
     }
   }
 
-  trait OrderSide {
+  sealed trait OrderSide {
     def opposite: OrderSide
   }
 
   object OrderSide {
-    object Buy extends OrderSide {
+    case object Buy extends OrderSide {
       override def opposite = Sell
-      override def toString = "Buy"
     }
 
-    object Sell extends OrderSide {
+    case object Sell extends OrderSide {
       override def opposite = Buy
-      override def toString = "Sell"
     }
 
     def apply(side: String): OrderSide = {
