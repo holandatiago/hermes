@@ -51,7 +51,7 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
 
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
     makeRequest[Option[Nothing]]("POST", List("order"),
-      Map("symbol" -> market, "side" -> side, "price" -> price, "quantity" -> volume))
+      Map("symbol" -> market, "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume))
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("DELETE", List("order", orderId))

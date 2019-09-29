@@ -51,8 +51,8 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
     makeRequest[List[Trade]]("GET", List("public", "getmarkethistory"), Map("market" -> market))
 
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): Unit =
-    makeRequest[Option[Nothing]]("GET", List("market", s"${side}limit"),
-      Map("market" -> market, "rate" -> price, "quantity" -> volume))
+    makeRequest[Option[Nothing]]("GET", List("market", side.toString.toLowerCase + "limit"),
+      Map("market" -> market, "timeInForce" -> "GTC", "rate" -> price, "quantity" -> volume))
 
   def cancelOrder(orderId: String): Unit =
     makeRequest[Option[Nothing]]("GET", List("market", "cancel"), Map("uuid" -> orderId))
