@@ -5,9 +5,9 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import hermes.exchanges.ExchangeClient
+import hermes.exchanges.ExchangeClient._
 import hermes.exchanges.ExchangeModels._
 import hermes.exchanges.hitbtc.v2.HitbtcCodecs._
-import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
 class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {

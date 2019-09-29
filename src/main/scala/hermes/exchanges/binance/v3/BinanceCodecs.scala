@@ -3,7 +3,6 @@ package hermes.exchanges.binance.v3
 import java.sql.Timestamp
 
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges.utils.OrderSide
 import spray.json._
 
 object BinanceCodecs extends DefaultJsonProtocol {

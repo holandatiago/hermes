@@ -3,7 +3,6 @@ package hermes.exchanges.hitbtc.v2
 import java.sql.Timestamp
 
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges.utils.OrderSide
 import spray.json._
 
 object HitbtcCodecs extends DefaultJsonProtocol {
