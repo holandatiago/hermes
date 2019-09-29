@@ -1,6 +1,6 @@
 package hermes.exchanges
 
-import java.sql.Timestamp
+import java.time.Instant
 
 object ExchangeModels {
   case class Market(
@@ -24,7 +24,7 @@ object ExchangeModels {
       last: BigDecimal,
       baseVolume: BigDecimal,
       quoteVolume: BigDecimal,
-      timestamp: Timestamp)
+      timestamp: Instant)
 
   case class OrderPage(
       price: BigDecimal,
@@ -38,19 +38,17 @@ object ExchangeModels {
       id: Long,
       price: BigDecimal,
       volume: BigDecimal,
-      timestamp: Timestamp,
+      timestamp: Instant,
       side: OrderSide)
 
   case class OpenOrder(
       id: String,
       market: String,
-      status: String,
       side: OrderSide,
       price: BigDecimal,
       volume: BigDecimal,
       remainingVolume: BigDecimal,
-      createdAt: Timestamp,
-      updatedAt: Timestamp)
+      timestamp: Instant)
 
   case class Balance(
       currency: String,
@@ -70,21 +68,10 @@ object ExchangeModels {
       override def opposite = Buy
     }
 
+    val values = List(Buy, Sell)
     def apply(side: String): OrderSide = {
-      List(Buy, Sell).find(_.toString.toLowerCase == side.toLowerCase)
+      values.find(_.toString.toLowerCase == side.toLowerCase)
           .getOrElse(throw new NoSuchElementException(s"OrderSide $side"))
-    }
-  }
-
-  sealed trait OrderStatus
-
-  object OrderStatus {
-    case object New extends OrderStatus
-    case object Rola extends OrderStatus
-
-    def apply(status: String): OrderStatus = {
-      List(New, Rola).find(_.toString.toLowerCase == status.toLowerCase)
-          .getOrElse(throw new NoSuchElementException(s"OrderStatus $status"))
     }
   }
 }

@@ -1,6 +1,6 @@
 package hermes.exchanges.binance.v3
 
-import java.sql.Timestamp
+import java.time.Instant
 
 import hermes.exchanges.ExchangeModels._
 import spray.json._
@@ -27,7 +27,7 @@ object BinanceCodecs extends DefaultJsonProtocol {
     last = fromField[BigDecimal](json, "lastPrice"),
     baseVolume = fromField[BigDecimal](json, "volume"),
     quoteVolume = fromField[BigDecimal](json, "quoteVolume"),
-    timestamp = new Timestamp(fromField[Long](json, "closeTime")))
+    timestamp = Instant.ofEpochMilli(fromField[Long](json, "closeTime")))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(
     price = json.convertTo[List[BigDecimal]].head,
@@ -41,19 +41,17 @@ object BinanceCodecs extends DefaultJsonProtocol {
     id = fromField[Long](json, "id"),
     price = fromField[BigDecimal](json, "price"),
     volume = fromField[BigDecimal](json, "qty"),
-    timestamp = new Timestamp(fromField[Long](json, "time")),
+    timestamp = Instant.ofEpochMilli(fromField[Long](json, "time")),
     side = if (fromField[Boolean](json, "isBuyerMaker")) OrderSide.Buy else OrderSide.Sell)
 
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
-    id = fromField[String](json, "clientOrderId"),
+    id = fromField[String](json, "symbol") + " " + fromField[String](json, "orderId"),
     market = fromField[String](json, "symbol"),
-    status = fromField[String](json, "status"),
     side = OrderSide(fromField[String](json, "side")),
     price = fromField[BigDecimal](json, "price"),
     volume = fromField[BigDecimal](json, "origQty"),
-    remainingVolume = fromField[BigDecimal](json, "cummulativeQuoteQty"),
-    createdAt = new Timestamp(fromField[Long](json, "time")),
-    updatedAt = new Timestamp(fromField[Long](json, "updateTime")))
+    remainingVolume = fromField[BigDecimal](json, "origQty") - fromField[BigDecimal](json, "executedQty"),
+    timestamp = Instant.ofEpochMilli(fromField[Long](json, "time")))
 
   implicit def balanceCodec(json: JsValue) = Balance(
     currency = fromField[String](json, "asset"),

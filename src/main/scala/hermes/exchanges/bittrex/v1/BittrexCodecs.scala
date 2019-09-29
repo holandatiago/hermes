@@ -1,6 +1,6 @@
 package hermes.exchanges.bittrex.v1
 
-import java.sql.Timestamp
+import java.time.{LocalDateTime, ZoneOffset}
 
 import hermes.exchanges.ExchangeModels._
 import spray.json._
@@ -10,11 +10,11 @@ object BittrexCodecs extends DefaultJsonProtocol {
     name = fromField[String](json, "MarketName"),
     baseCurrency = fromField[String](json, "MarketCurrency"),
     quoteCurrency = fromField[String](json, "BaseCurrency"),
-    minPrice = fromField[BigDecimal](json, "MinTradeSize"),
-    tickPrice = fromField[BigDecimal](json, ""),
-    minBaseVolume = fromField[BigDecimal](json, ""),
-    tickBaseVolume = fromField[BigDecimal](json, ""),
-    minQuoteVolume = BigDecimal(0),
+    minPrice = BigDecimal(0),
+    tickPrice = BigDecimal(1, 8),
+    minBaseVolume = fromField[BigDecimal](json, "MinTradeSize"),
+    tickBaseVolume = BigDecimal(1, 8),
+    minQuoteVolume = BigDecimal(5, 4),
     active = fromField[Boolean](json, "IsActive"))
 
   implicit def tickerCodec(json: JsValue) = Ticker(
@@ -27,7 +27,7 @@ object BittrexCodecs extends DefaultJsonProtocol {
     last = fromField[BigDecimal](json, "Last"),
     baseVolume = fromField[BigDecimal](json, "Volume"),
     quoteVolume = fromField[BigDecimal](json, "BaseVolume"),
-    timestamp = Timestamp.valueOf(fromField[String](json, "TimeStamp")))
+    timestamp = LocalDateTime.parse(fromField[String](json, "TimeStamp")).toInstant(ZoneOffset.UTC))
 
   implicit def orderPageCodec(json: JsValue) = OrderPage(
     price = fromField[BigDecimal](json, "Rate"),
@@ -41,19 +41,17 @@ object BittrexCodecs extends DefaultJsonProtocol {
     id = fromField[Long](json, "Id"),
     price = fromField[BigDecimal](json, "Price"),
     volume = fromField[BigDecimal](json, "Quantity"),
-    timestamp = Timestamp.valueOf(fromField[String](json, "TimeStamp")),
+    timestamp = LocalDateTime.parse(fromField[String](json, "TimeStamp")).toInstant(ZoneOffset.UTC),
     side = OrderSide(fromField[String](json, "OrderType")))
 
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
-    id = fromField[String](json, "Id"),
+    id = fromField[String](json, "OrderUuid"),
     market = fromField[String](json, "Exchange"),
-    status = fromField[String](json, "CancelInitiated"),
-    side = OrderSide(fromField[String](json, "OrderType")),
+    side = OrderSide(fromField[String](json, "OrderType").substring(6)),
     price = fromField[BigDecimal](json, "Price"),
     volume = fromField[BigDecimal](json, "Quantity"),
     remainingVolume = fromField[BigDecimal](json, "QuantityRemaining"),
-    createdAt = Timestamp.valueOf(fromField[String](json, "Opened")),
-    updatedAt = Timestamp.valueOf(fromField[String](json, "Opened")))
+    timestamp = LocalDateTime.parse(fromField[String](json, "Opened")).toInstant(ZoneOffset.UTC))
 
   implicit def balanceCodec(json: JsValue) = Balance(
     currency = fromField[String](json, "Currency"),

@@ -54,7 +54,8 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
       Map("symbol" -> market, "side" -> side, "type" -> "limit", "price" -> price, "quantity" -> volume))
 
   def cancelOrder(orderId: String): Unit =
-    makeRequest[Option[Nothing]]("DELETE", List("v3", "order"), Map("origClientOrderId" -> orderId))
+    makeRequest[Option[Nothing]]("DELETE", List("v3", "order"),
+      Map("symbol" -> orderId.split(" ").head, "orderId" -> orderId.split(" ").last))
 
   def getOpenOrders(market: String): List[OpenOrder] =
     makeRequest[List[OpenOrder]]("GET", List("v3", "openOrders"), Map("symbol" -> market))
