@@ -20,13 +20,16 @@ object ExchangeClient {
 }
 
 trait ExchangeClient {
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
-  implicit val executionContext = system.dispatcher
-  val http = Http()
+  //make it abstract class and its childs case classes?
+  //make those variables a parameter? Put on object?
+  protected implicit val system = ActorSystem()
+  protected implicit val materializer = ActorMaterializer()
+  protected implicit val executionContext = system.dispatcher
+  protected val http = Http()
+  val apiKey: ApiKey
 
-  def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
-  def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
+  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
 
   def makeRequest[T: RootJsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
     val httpRequest = buildHttpRequest(method, route, params)

@@ -10,12 +10,12 @@ import hermes.exchanges.binance.v3.BinanceCodecs._
 import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
-class BinanceClient(apiKey: ApiKey) extends ExchangeClient {
-  val auth = Auth(apiKey.secret, "HmacSHA256")
-  val host = "https://api.binance.com"
-  val path = "/api"
+class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
+  protected val auth = Auth(apiKey.secret, "HmacSHA256")
+  protected val host = "https://api.binance.com"
+  protected val path = "/api"
 
-  override def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
     route.head match {
       case "v1" =>
         val allParams = params.mapValues(_.toString)
@@ -30,7 +30,7 @@ class BinanceClient(apiKey: ApiKey) extends ExchangeClient {
     }
   }
 
-  override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
+  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
     response match {
       case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
       case _ => Unmarshal(response).to[Error].map(e => sys.error(e.msg))

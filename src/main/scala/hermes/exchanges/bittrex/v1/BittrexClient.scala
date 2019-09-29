@@ -10,12 +10,12 @@ import hermes.exchanges.bittrex.v1.BittrexCodecs._
 import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
-class BittrexClient(apiKey: ApiKey) extends ExchangeClient {
-  val auth = Auth(apiKey.secret, "HmacSHA512")
-  val host = "https://api.bittrex.com"
-  val path = "/api/v1.1"
+class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
+  protected val auth = Auth(apiKey.secret, "HmacSHA512")
+  protected val host = "https://api.bittrex.com"
+  protected val path = "/api/v1.1"
 
-  override def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
     route.head match {
       case "public" =>
         val allParams = params.mapValues(_.toString)
@@ -30,7 +30,7 @@ class BittrexClient(apiKey: ApiKey) extends ExchangeClient {
     }
   }
 
-  override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
+  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
     Unmarshal(response).to[Response[T]].map {
       case Response(true, _, result) => result.get
       case Response(false, msg, _) => sys.error(msg)

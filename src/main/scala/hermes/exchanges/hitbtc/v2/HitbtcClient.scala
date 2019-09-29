@@ -10,12 +10,12 @@ import hermes.exchanges.hitbtc.v2.HitbtcCodecs._
 import hermes.exchanges.utils._
 import spray.json.RootJsonFormat
 
-class HitbtcClient(apiKey: ApiKey) extends ExchangeClient {
-  val auth = Authorization(BasicHttpCredentials(apiKey.public, apiKey.secret))
-  val host = "https://api.hitbtc.com"
-  val path = "/api/2"
+class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
+  protected val auth = Authorization(BasicHttpCredentials(apiKey.public, apiKey.secret))
+  protected val host = "https://api.hitbtc.com"
+  protected val path = "/api/2"
 
-  override def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
+  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = {
     route.head match {
       case "public" =>
         val allParams = params.mapValues(_.toString)
@@ -30,7 +30,7 @@ class HitbtcClient(apiKey: ApiKey) extends ExchangeClient {
     }
   }
 
-  override def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
+  protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
     response match {
       case HttpResponse(StatusCodes.OK, _, _, _) => Unmarshal(response).to[T]
       case _ => Unmarshal(response).to[ErrorResponse].map(e => sys.error(e.error.message))
