@@ -13,3 +13,4 @@ build/
 
 #general
 *.class
+*.conf

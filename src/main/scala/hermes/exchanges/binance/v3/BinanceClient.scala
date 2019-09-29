@@ -10,6 +10,10 @@ import hermes.exchanges.ExchangeModels._
 import hermes.exchanges.binance.v3.BinanceCodecs._
 import spray.json.RootJsonFormat
 
+object BinanceClient {
+  val name = "binance"
+}
+
 class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
   protected val auth = Auth(apiKey.secret, "HmacSHA256")
   protected val host = "https://api.binance.com"

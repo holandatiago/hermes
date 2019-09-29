@@ -1,25 +1,14 @@
 package hermes.exchanges
 
-import hermes.exchanges.ExchangeClient.ApiKey
 import hermes.exchanges.ExchangeModels.OrderSide
 import org.scalatest.FunSpec
 
 import scala.util.Try
 
 class ExchangeClientSuite extends FunSpec {
-  val binanceClient = ExchangeClient("binance",
-    ApiKey("",
-      ""))
-  val bittrexClient = ExchangeClient("bittrex",
-    ApiKey("", ""))
-  val hitbtcClient = ExchangeClient("hitbtc",
-    ApiKey("", ""))
+  Account.test.map(ExchangeClient.apply).foreach(testClient)
 
-  testClient("Binance", binanceClient)
-  testClient("Bittrex", bittrexClient)
-  testClient("Hitbtc", hitbtcClient)
-
-  def testClient(name: String, client: ExchangeClient): Unit = describe(s"$name client:") {
+  def testClient(client: ExchangeClient): Unit = describe(client.getClass.getName) {
     val marketsTry = Try(client.getMarkets)
     val mainMarketOption = marketsTry.toOption
         .flatMap(_.filter(_.baseCurrency == "ETH").find(_.quoteCurrency == "BTC"))

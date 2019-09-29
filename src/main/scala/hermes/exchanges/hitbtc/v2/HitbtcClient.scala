@@ -10,6 +10,10 @@ import hermes.exchanges.ExchangeModels._
 import hermes.exchanges.hitbtc.v2.HitbtcCodecs._
 import spray.json.RootJsonFormat
 
+object HitbtcClient {
+  val name = "hitbtc"
+}
+
 class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
   protected val auth = Authorization(BasicHttpCredentials(apiKey.public, apiKey.secret))
   protected val host = "https://api.hitbtc.com"

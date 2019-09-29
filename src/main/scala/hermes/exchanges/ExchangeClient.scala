@@ -39,10 +39,12 @@ object ExchangeClient {
   //remove that Option[Nothing] shit
   implicit val emptyCodec = DefaultJsonProtocol.jsonFormat0[Option[Nothing]](() => None)
 
-  def apply(name: String, apiKey: ApiKey): ExchangeClient = name.toLowerCase match {
-    case "binance" => new binance.v3.BinanceClient(apiKey)
-    case "bittrex" => new bittrex.v1.BittrexClient(apiKey)
-    case "hitbtc" => new hitbtc.v2.HitbtcClient(apiKey)
+  def apply(name: String): ExchangeClient = apply(Account(name))
+
+  def apply(account: Account): ExchangeClient = account.exchange.toLowerCase match {
+    case binance.v3.BinanceClient.name => new binance.v3.BinanceClient(ApiKey(account.publicKey, account.privateKey))
+    case bittrex.v1.BittrexClient.name => new bittrex.v1.BittrexClient(ApiKey(account.publicKey, account.privateKey))
+    case hitbtc.v2.HitbtcClient.name => new hitbtc.v2.HitbtcClient(ApiKey(account.publicKey, account.privateKey))
   }
 }
 

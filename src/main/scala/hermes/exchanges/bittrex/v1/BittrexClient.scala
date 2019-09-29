@@ -10,6 +10,10 @@ import hermes.exchanges.ExchangeModels._
 import hermes.exchanges.bittrex.v1.BittrexCodecs._
 import spray.json.RootJsonFormat
 
+object BittrexClient {
+  val name = "bittrex"
+}
+
 class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
   protected val auth = Auth(apiKey.secret, "HmacSHA512")
   protected val host = "https://api.bittrex.com"
