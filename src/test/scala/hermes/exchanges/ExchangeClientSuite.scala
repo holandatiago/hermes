@@ -1,6 +1,5 @@
 package hermes.exchanges
 
-import hermes.exchanges.ExchangeModels.OrderSide
 import org.scalatest.FunSpec
 
 import scala.util.Try
