@@ -16,8 +16,9 @@ object HitbtcClient {
 
 case class HitbtcClient(publicKey: String, privateKey: String) extends ExchangeClient {
   protected val auth = Authorization(BasicHttpCredentials(publicKey, privateKey))
-  protected val host = "https://api.hitbtc.com"
-  protected val path = "/api/2"
+  val host = "https://api.hitbtc.com"
+  val path = "/api/2"
+  val fee = BigDecimal("0.0007")
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "public" =>
@@ -39,8 +40,6 @@ case class HitbtcClient(publicKey: String, privateKey: String) extends ExchangeC
       case ErrorResponse(Error(_, message, _)) => sys.error(message)
     }
   }
-
-  def getFee: BigDecimal = BigDecimal("0.0007")
 
   def getMarkets: List[Market] =
     makeRequest[List[Market]]("GET", List("public", "symbol"))

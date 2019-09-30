@@ -54,6 +54,9 @@ trait ExchangeClient {
   protected val http = Http()
   val publicKey: String
   val privateKey: String
+  val host: String
+  val path: String
+  val fee: BigDecimal
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
@@ -71,8 +74,6 @@ trait ExchangeClient {
     val response = httpResponseFuture.flatMap(printResponse).flatMap(handleHttpResponse[T])
     Await.result(response, Duration(30, SECONDS))
   }
-
-  def getFee: BigDecimal
 
   def getMarkets: List[Market]
 

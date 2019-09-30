@@ -16,8 +16,9 @@ object BinanceClient {
 
 case class BinanceClient(publicKey: String, privateKey: String) extends ExchangeClient {
   protected val auth = Auth(privateKey, "HmacSHA256")
-  protected val host = "https://api.binance.com"
-  protected val path = "/api"
+  val host = "https://api.binance.com"
+  val path = "/api"
+  val fee = BigDecimal("0.0010")
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "v1" =>
@@ -25,7 +26,7 @@ case class BinanceClient(publicKey: String, privateKey: String) extends Exchange
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
     case "v3" =>
-      val totalParams = (params + ("timestamp" -> System.currentTimeMillis())).mapValues(_.toString)
+      val totalParams = (params + ("timestamp" -> System.currentTimeMillis)).mapValues(_.toString)
       val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       val headers = List(RawHeader("X-MBX-APIKEY", publicKey))
@@ -39,8 +40,6 @@ case class BinanceClient(publicKey: String, privateKey: String) extends Exchange
       case Error(_, message) => sys.error(message)
     }
   }
-
-  def getFee: BigDecimal = BigDecimal("0.0010")
 
   def getMarkets: List[Market] =
     makeRequest[ExchangeInfo]("GET", List("v1", "exchangeInfo")).symbols

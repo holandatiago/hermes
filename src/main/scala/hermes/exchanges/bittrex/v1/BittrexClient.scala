@@ -16,8 +16,9 @@ object BittrexClient {
 
 case class BittrexClient(publicKey: String, privateKey: String) extends ExchangeClient {
   protected val auth = Auth(privateKey, "HmacSHA512")
-  protected val host = "https://api.bittrex.com"
-  protected val path = "/api/v1.1"
+  val host = "https://api.bittrex.com"
+  val path = "/api/v1.1"
+  val fee = BigDecimal("0.0025")
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "public" =>
@@ -25,7 +26,7 @@ case class BittrexClient(publicKey: String, privateKey: String) extends Exchange
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
     case _ =>
-      val apiKeyParams = Map("apiKey" -> publicKey, "nonce" -> System.currentTimeMillis())
+      val apiKeyParams = Map("apiKey" -> publicKey, "nonce" -> System.currentTimeMillis)
       val allParams = (params ++ apiKeyParams).mapValues(_.toString)
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       val headers = List(RawHeader("apisign", auth.generateHmac(uri.toString)))
@@ -39,8 +40,6 @@ case class BittrexClient(publicKey: String, privateKey: String) extends Exchange
       case Response(false, msg, _) => sys.error(msg)
     }
   }
-
-  def getFee: BigDecimal = BigDecimal("0.0025")
 
   def getMarkets: List[Market] =
     makeRequest[List[Market]]("GET", List("public", "getmarkets"))
