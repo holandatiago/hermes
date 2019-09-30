@@ -4,7 +4,7 @@ import org.scalatest.FunSpec
 
 import scala.util.Try
 
-class ExchangeClientSuite extends FunSpec {
+class ExchangeClientSpec extends FunSpec {
   Account.test.map(ExchangeClient.apply).foreach(testClient)
 
   def testClient(client: ExchangeClient): Unit = describe(client.getClass.getName) {
