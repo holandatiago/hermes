@@ -15,9 +15,6 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 object ExchangeClient {
-  //delete this shit?
-  case class ApiKey(public: String, secret: String)
-
   //merge with Exchange client? Trait or Object?
   case class Auth(key: String, algorithm: String) {
     val secret = new SecretKeySpec(key.getBytes, algorithm)
@@ -42,21 +39,21 @@ object ExchangeClient {
   def apply(name: String): ExchangeClient = apply(Account(name))
 
   def apply(account: Account): ExchangeClient = account.exchange.toLowerCase match {
-    case binance.v3.BinanceClient.name => new binance.v3.BinanceClient(ApiKey(account.publicKey, account.privateKey))
-    case bittrex.v1.BittrexClient.name => new bittrex.v1.BittrexClient(ApiKey(account.publicKey, account.privateKey))
-    case hitbtc.v2.HitbtcClient.name => new hitbtc.v2.HitbtcClient(ApiKey(account.publicKey, account.privateKey))
+    case binance.v3.BinanceClient.name => new binance.v3.BinanceClient(account.publicKey, account.privateKey)
+    case bittrex.v1.BittrexClient.name => new bittrex.v1.BittrexClient(account.publicKey, account.privateKey)
+    case hitbtc.v2.HitbtcClient.name => new hitbtc.v2.HitbtcClient(account.publicKey, account.privateKey)
   }
 }
 
 trait ExchangeClient {
-  import ExchangeClient._
   //make it abstract class and its childs case classes?
   //make those variables a parameter? Put on object?
   protected implicit val system = ActorSystem()
   protected implicit val materializer = ActorMaterializer()
   protected implicit val executionContext = system.dispatcher
   protected val http = Http()
-  val apiKey: ApiKey
+  val publicKey: String
+  val privateKey: String
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any] = Map()): HttpRequest
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]

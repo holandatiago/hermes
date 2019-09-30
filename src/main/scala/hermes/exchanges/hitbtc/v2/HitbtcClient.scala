@@ -14,8 +14,8 @@ object HitbtcClient {
   val name = "hitbtc"
 }
 
-class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
-  protected val auth = Authorization(BasicHttpCredentials(apiKey.public, apiKey.secret))
+case class HitbtcClient(publicKey: String, privateKey: String) extends ExchangeClient {
+  protected val auth = Authorization(BasicHttpCredentials(publicKey, privateKey))
   protected val host = "https://api.hitbtc.com"
   protected val path = "/api/2"
 

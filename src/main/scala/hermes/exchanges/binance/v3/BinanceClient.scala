@@ -14,8 +14,8 @@ object BinanceClient {
   val name = "binance"
 }
 
-class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
-  protected val auth = Auth(apiKey.secret, "HmacSHA256")
+case class BinanceClient(publicKey: String, privateKey: String) extends ExchangeClient {
+  protected val auth = Auth(privateKey, "HmacSHA256")
   protected val host = "https://api.binance.com"
   protected val path = "/api"
 
@@ -28,7 +28,7 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
       val totalParams = (params + ("timestamp" -> System.currentTimeMillis())).mapValues(_.toString)
       val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
-      val headers = List(RawHeader("X-MBX-APIKEY", apiKey.public))
+      val headers = List(RawHeader("X-MBX-APIKEY", publicKey))
       HttpRequest(HttpMethods.getForKey(method).get, uri, headers)
   }
 

@@ -14,8 +14,8 @@ object BittrexClient {
   val name = "bittrex"
 }
 
-class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
-  protected val auth = Auth(apiKey.secret, "HmacSHA512")
+case class BittrexClient(publicKey: String, privateKey: String) extends ExchangeClient {
+  protected val auth = Auth(privateKey, "HmacSHA512")
   protected val host = "https://api.bittrex.com"
   protected val path = "/api/v1.1"
 
@@ -25,7 +25,7 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
     case _ =>
-      val apiKeyParams = Map("apiKey" -> apiKey.public, "nonce" -> System.currentTimeMillis())
+      val apiKeyParams = Map("apiKey" -> publicKey, "nonce" -> System.currentTimeMillis())
       val allParams = (params ++ apiKeyParams).mapValues(_.toString)
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       val headers = List(RawHeader("apisign", auth.generateHmac(uri.toString)))
