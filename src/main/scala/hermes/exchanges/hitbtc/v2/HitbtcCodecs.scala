@@ -45,6 +45,11 @@ object HitbtcCodecs extends DefaultJsonProtocol {
     timestamp = Instant.parse(fromField[String](json, "timestamp")),
     side = OrderSide(fromField[String](json, "side")))
 
+  implicit def balanceCodec(json: JsValue) = Balance(
+    currency = fromField[String](json, "currency"),
+    reserved = fromField[BigDecimal](json, "reserved"),
+    available = fromField[BigDecimal](json, "available"))
+
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
     id = fromField[String](json, "clientOrderId"),
     market = fromField[String](json, "symbol"),
@@ -53,11 +58,6 @@ object HitbtcCodecs extends DefaultJsonProtocol {
     volume = fromField[BigDecimal](json, "quantity"),
     remainingVolume = fromField[BigDecimal](json, "quantity") - fromField[BigDecimal](json, "cumQuantity"),
     timestamp = Instant.parse(fromField[String](json, "createdAt")))
-
-  implicit def balanceCodec(json: JsValue) = Balance(
-    currency = fromField[String](json, "currency"),
-    reserved = fromField[BigDecimal](json, "reserved"),
-    available = fromField[BigDecimal](json, "available"))
 
   case class Error(code: Int, message: String, description: Option[String])
   implicit def errorCodec = jsonFormat3(Error)

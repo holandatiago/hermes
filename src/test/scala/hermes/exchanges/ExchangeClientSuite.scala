@@ -80,8 +80,7 @@ class ExchangeClientSuite extends FunSpec {
     }
 
     val balancesTry = Try(client.getBalances)
-    val mainBalanceOption = balancesTry.toOption
-        .flatMap(_.find(_.currency == "BTC"))
+    val mainBalanceOption = balancesTry.toOption.flatMap(_.find(_.currency == "BTC"))
     describe("getBalances") {
       it("should call getBalances with no errors.") {
         assert(balancesTry.isSuccess)
@@ -143,8 +142,8 @@ class ExchangeClientSuite extends FunSpec {
     }
 
     val cancelOrderTry = Try(client.cancelOrder(orderSentOption.get.id))
-    val cancelAgainOrderTry = Try(client.cancelOrder(orderSentOption.get.id))
     val ordersCancelledTry = Try(client.getOpenOrders(mainMarketOption.get.name))
+    val cancelAgainOrderTry = Try(client.cancelOrder(orderSentOption.get.id))
     describe("cancelOrder") {
       it("should call cancelOrder with no errors.") {
         assume(orderSentOption.isDefined)

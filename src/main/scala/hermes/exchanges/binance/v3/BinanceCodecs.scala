@@ -45,6 +45,11 @@ object BinanceCodecs extends DefaultJsonProtocol {
     timestamp = Instant.ofEpochMilli(fromField[Long](json, "time")),
     side = if (fromField[Boolean](json, "isBuyerMaker")) OrderSide.Buy else OrderSide.Sell)
 
+  implicit def balanceCodec(json: JsValue) = Balance(
+    currency = fromField[String](json, "asset"),
+    reserved = fromField[BigDecimal](json, "locked"),
+    available = fromField[BigDecimal](json, "free"))
+
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
     id = fromField[String](json, "symbol") + " " + fromField[Long](json, "orderId"),
     market = fromField[String](json, "symbol"),
@@ -53,11 +58,6 @@ object BinanceCodecs extends DefaultJsonProtocol {
     volume = fromField[BigDecimal](json, "origQty"),
     remainingVolume = fromField[BigDecimal](json, "origQty") - fromField[BigDecimal](json, "executedQty"),
     timestamp = Instant.ofEpochMilli(fromField[Option[Long]](json, "time").getOrElse(0L)))
-
-  implicit def balanceCodec(json: JsValue) = Balance(
-    currency = fromField[String](json, "asset"),
-    reserved = fromField[BigDecimal](json, "locked"),
-    available = fromField[BigDecimal](json, "free"))
 
   case class ExchangeInfo(symbols: List[Market])
   implicit def exchangeInfoCodec(implicit jf: JsonFormat[Market]) = jsonFormat1(ExchangeInfo)

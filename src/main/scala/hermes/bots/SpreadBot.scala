@@ -1,9 +1,9 @@
 package hermes.bots
 
 import hermes.exchanges.ExchangeClient
-import hermes.exchanges.ExchangeModels.Market
+import hermes.exchanges.ExchangeModels._
 
-class SpreadBot(exchange: ExchangeClient) extends Runnable {
+case class SpreadBot(exchange: ExchangeClient) extends Runnable {
   def run(): Unit = {
     while (true) {
       searchForBestMarket
@@ -27,7 +27,5 @@ class SpreadBot(exchange: ExchangeClient) extends Runnable {
   def tradeOnMarket(market: Market): Unit = {
     val orderBook = exchange.getOrderBook(market.name)
     val trades = exchange.getLastTrades(market.name)
-
-    //balances(market.targetCurrency).available > 0
   }
 }

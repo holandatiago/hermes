@@ -1,6 +1,9 @@
 package hermes
 
+import exchanges._
+
 object Main extends App {
-  /*val exchange = exchanges.Exchange()
-  new bots.SpreadBot(exchange)*/
+  val account = args.head
+  val client = ExchangeClient(Account(account))
+  bots.SpreadBot(client).run()
 }

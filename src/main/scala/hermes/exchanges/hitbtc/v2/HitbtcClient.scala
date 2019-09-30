@@ -4,21 +4,17 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import hermes.exchanges.ExchangeClient._
 import hermes.exchanges.ExchangeModels._
+import hermes.exchanges._
 import hermes.exchanges.hitbtc.v2.HitbtcCodecs._
-import hermes.exchanges.{ExchangeClient, OrderSide}
 import spray.json.RootJsonFormat
 
-object HitbtcClient {
-  val name = "hitbtc"
-}
-
-case class HitbtcClient(publicKey: String, privateKey: String) extends ExchangeClient {
-  protected val auth = Authorization(BasicHttpCredentials(publicKey, privateKey))
+case class HitbtcClient(publicKey: String, privateKey: String, rateLimit: Long = 10L) extends ExchangeClient {
   val host = "https://api.hitbtc.com"
   val path = "/api/2"
   val fee = BigDecimal("0.0007")
+
+  protected val authorization = Authorization(BasicHttpCredentials(publicKey, privateKey))
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "public" =>
@@ -30,7 +26,7 @@ case class HitbtcClient(publicKey: String, privateKey: String) extends ExchangeC
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       val entity = if (method != "POST") HttpEntity.Empty
       else HttpEntity(ContentTypes.`application/x-www-form-urlencoded`, Uri.Query(allParams).toString)
-      HttpRequest(HttpMethods.getForKey(method).get, uri, List(auth), entity)
+      HttpRequest(HttpMethods.getForKey(method).get, uri, List(authorization), entity)
   }
 
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = response match {

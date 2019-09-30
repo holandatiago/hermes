@@ -4,21 +4,17 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import hermes.exchanges.ExchangeClient._
 import hermes.exchanges.ExchangeModels._
+import hermes.exchanges._
 import hermes.exchanges.binance.v3.BinanceCodecs._
-import hermes.exchanges.{ExchangeClient, OrderSide}
 import spray.json.RootJsonFormat
 
-object BinanceClient {
-  val name = "binance"
-}
-
-case class BinanceClient(publicKey: String, privateKey: String) extends ExchangeClient {
-  protected val auth = Auth(privateKey, "HmacSHA256")
+case class BinanceClient(publicKey: String, privateKey: String, rateLimit: Long = 50L) extends ExchangeClient {
   val host = "https://api.binance.com"
   val path = "/api"
   val fee = BigDecimal("0.0010")
+
+  protected val authenticator = Authenticator(privateKey, "HmacSHA256")
 
   protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "v1" =>
@@ -27,7 +23,7 @@ case class BinanceClient(publicKey: String, privateKey: String) extends Exchange
       HttpRequest(HttpMethods.getForKey(method).get, uri, Nil)
     case "v3" =>
       val totalParams = (params + ("timestamp" -> System.currentTimeMillis)).mapValues(_.toString)
-      val allParams = totalParams + ("signature" -> auth.generateHmac(Uri.Query(totalParams).toString))
+      val allParams = totalParams + ("signature" -> authenticator.sign(Uri.Query(totalParams).toString))
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
       val headers = List(RawHeader("X-MBX-APIKEY", publicKey))
       HttpRequest(HttpMethods.getForKey(method).get, uri, headers)

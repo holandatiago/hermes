@@ -45,6 +45,11 @@ object BittrexCodecs extends DefaultJsonProtocol {
     timestamp = LocalDateTime.parse(fromField[String](json, "TimeStamp")).toInstant(ZoneOffset.UTC),
     side = OrderSide(fromField[String](json, "OrderType")))
 
+  implicit def balanceCodec(json: JsValue) = Balance(
+    currency = fromField[String](json, "Currency"),
+    reserved = fromField[BigDecimal](json, "Pending"),
+    available = fromField[BigDecimal](json, "Available"))
+
   implicit def openOrderCodec(json: JsValue) = OpenOrder(
     id = fromField[String](json, "OrderUuid"),
     market = fromField[String](json, "Exchange"),
@@ -54,14 +59,9 @@ object BittrexCodecs extends DefaultJsonProtocol {
     remainingVolume = fromField[BigDecimal](json, "QuantityRemaining"),
     timestamp = LocalDateTime.parse(fromField[String](json, "Opened")).toInstant(ZoneOffset.UTC))
 
-  implicit def balanceCodec(json: JsValue) = Balance(
-    currency = fromField[String](json, "Currency"),
-    reserved = fromField[BigDecimal](json, "Pending"),
-    available = fromField[BigDecimal](json, "Available"))
+  case class Uuid(uuid: String)
+  implicit def uuidCodec = jsonFormat1(Uuid)
 
   case class Response[T](success: Boolean, message: String, result: Option[T])
   implicit def responseCodec[T](implicit jf: JsonFormat[T]) = jsonFormat3(Response[T])
-
-  case class Uuid(uuid: String)
-  implicit def uuidCodec = jsonFormat1(Uuid)
 }

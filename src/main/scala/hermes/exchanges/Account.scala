@@ -4,9 +4,9 @@ import pureconfig._
 import pureconfig.generic.auto._
 
 object Account {
-  case class Accounts(accounts: List[Account])
+  case class Config(accounts: List[Account])
 
-  val values: List[Account] = loadConfigOrThrow[Accounts].accounts
+  val values: List[Account] = loadConfigOrThrow[Config].accounts
   def test: List[Account] = values.filter(_.test)
 
   def apply(name: String): Account = {

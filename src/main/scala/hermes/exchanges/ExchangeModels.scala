@@ -41,6 +41,11 @@ object ExchangeModels {
       timestamp: Instant,
       side: OrderSide)
 
+  case class Balance(
+      currency: String,
+      reserved: BigDecimal,
+      available: BigDecimal)
+
   case class OpenOrder(
       id: String,
       market: String,
@@ -49,9 +54,4 @@ object ExchangeModels {
       volume: BigDecimal,
       remainingVolume: BigDecimal,
       timestamp: Instant)
-
-  case class Balance(
-      currency: String,
-      reserved: BigDecimal,
-      available: BigDecimal)
 }
