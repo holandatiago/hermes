@@ -75,6 +75,8 @@ trait ExchangeClient {
     Await.result(response, Duration(30, SECONDS))
   }
 
+  def getFee: BigDecimal
+
   def getMarkets: List[Market]
 
   def getTickers: List[Ticker]

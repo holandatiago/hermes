@@ -40,6 +40,8 @@ class BinanceClient(val apiKey: ApiKey) extends ExchangeClient {
     }
   }
 
+  def getFee: BigDecimal = BigDecimal("0.0010")
+
   def getMarkets: List[Market] =
     makeRequest[ExchangeInfo]("GET", List("v1", "exchangeInfo")).symbols
 

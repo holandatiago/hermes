@@ -40,6 +40,8 @@ class HitbtcClient(val apiKey: ApiKey) extends ExchangeClient {
     }
   }
 
+  def getFee: BigDecimal = BigDecimal("0.0007")
+
   def getMarkets: List[Market] =
     makeRequest[List[Market]]("GET", List("public", "symbol"))
 

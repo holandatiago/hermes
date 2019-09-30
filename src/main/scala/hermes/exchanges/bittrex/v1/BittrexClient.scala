@@ -40,6 +40,8 @@ class BittrexClient(val apiKey: ApiKey) extends ExchangeClient {
     }
   }
 
+  def getFee: BigDecimal = BigDecimal("0.0025")
+
   def getMarkets: List[Market] =
     makeRequest[List[Market]]("GET", List("public", "getmarkets"))
 
