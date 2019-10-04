@@ -33,17 +33,12 @@ trait ExchangeClient {
   protected val http = Http()
   protected var lastRequest = System.currentTimeMillis
 
-  protected implicit def readFunctionToRootJsonFormat[T](implicit fun: JsValue => T) = new RootJsonFormat[T] {
-    def read(json: JsValue) = fun(json)
-    def write(obj: T) = JsNull
-  }
-
   def makeRequest[T: RootJsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
     Thread.sleep(Math.max(lastRequest + rateLimit - System.currentTimeMillis, 0))
     lastRequest = System.currentTimeMillis
-    val httpRequest = buildHttpRequest(method, route, params)
-    val httpResponseFuture = http.singleRequest(httpRequest)
-    val response = httpResponseFuture.flatMap(printResponse(lastRequest)).flatMap(handleHttpResponse[T])
+    val httpRequest = Future(createHttpRequest(method, route, params))
+    val httpResponse = httpRequest.flatMap(http.singleRequest(_))
+    val response = httpResponse.flatMap(printResponse(lastRequest)).flatMap(handleHttpResponse[T])
     Await.result(response, Duration(30, SECONDS))
   }
 
@@ -55,7 +50,7 @@ trait ExchangeClient {
     }
   }
 
-  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]): HttpRequest
+  protected def createHttpRequest(method: String, route: List[String], params: Map[String, Any]): HttpRequest
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse): Future[T]
 
   def getMarkets: List[Market]

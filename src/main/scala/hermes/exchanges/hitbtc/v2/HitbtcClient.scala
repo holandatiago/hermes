@@ -16,7 +16,7 @@ case class HitbtcClient(publicKey: String, privateKey: String, rateLimit: Long =
 
   protected val authorization = Authorization(BasicHttpCredentials(publicKey, privateKey))
 
-  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
+  protected def createHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "public" =>
       val allParams = params.mapValues(_.toString)
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))

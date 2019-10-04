@@ -16,7 +16,7 @@ case class BinanceClient(publicKey: String, privateKey: String, rateLimit: Long 
 
   protected val authenticator = Authenticator(privateKey, "HmacSHA256")
 
-  protected def buildHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
+  protected def createHttpRequest(method: String, route: List[String], params: Map[String, Any]) = route.head match {
     case "v1" =>
       val allParams = params.mapValues(_.toString)
       val uri = Uri(host).withPath(Uri.Path(s"$path/${route.mkString("/")}")).withQuery(Uri.Query(allParams))
