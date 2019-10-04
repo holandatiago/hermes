@@ -64,4 +64,6 @@ object HitbtcCodecs extends DefaultJsonProtocol {
 
   case class ErrorResponse(error: Error)
   implicit def errorResponseCodec(implicit jf: JsonFormat[Error]) = jsonFormat1(ErrorResponse)
+
+  implicit def optionCodec[T: JsonFormat] = rootFormat(new OptionFormat[T])
 }

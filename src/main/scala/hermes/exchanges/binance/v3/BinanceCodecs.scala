@@ -76,4 +76,6 @@ object BinanceCodecs extends DefaultJsonProtocol {
 
   case class Error(code: Int, msg: String)
   implicit def errorCodec = jsonFormat2(Error)
+
+  implicit def optionCodec[T: JsonFormat] = rootFormat(new OptionFormat[T])
 }

@@ -64,4 +64,6 @@ object BittrexCodecs extends DefaultJsonProtocol {
 
   case class Response[T](success: Boolean, message: String, result: Option[T])
   implicit def responseCodec[T](implicit jf: JsonFormat[T]) = jsonFormat3(Response[T])
+
+  implicit def booleanCodec = rootFormat(BooleanJsonFormat)
 }

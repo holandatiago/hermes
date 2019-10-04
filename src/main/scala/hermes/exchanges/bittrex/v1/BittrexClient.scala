@@ -31,8 +31,8 @@ case class BittrexClient(publicKey: String, privateKey: String, rateLimit: Long 
 
   protected def handleHttpResponse[T: RootJsonFormat](response: HttpResponse) = {
     Unmarshal(response).to[Response[T]].map {
-      case Response(true, _, result) => result.getOrElse(None.asInstanceOf[T])
-      case Response(false, "ORDER_NOT_OPEN", _) => None.asInstanceOf[T]
+      case Response(true, _, result) => result.getOrElse(true.asInstanceOf[T])
+      case Response(false, "ORDER_NOT_OPEN", _) => false.asInstanceOf[T]
       case Response(false, msg, _) => sys.error(msg)
     }
   }
@@ -59,6 +59,6 @@ case class BittrexClient(publicKey: String, privateKey: String, rateLimit: Long 
     makeRequest[Uuid]("GET", List("market", side.toString.toLowerCase + "limit"),
       Map("market" -> market, "timeInForce" -> "GTC", "rate" -> price, "quantity" -> volume)).uuid
 
-  def cancelOrder(orderId: String): Unit =
-    makeRequest[Option[Nothing]]("GET", List("market", "cancel"), Map("uuid" -> orderId))
+  def cancelOrder(orderId: String): Boolean =
+    makeRequest[Boolean]("GET", List("market", "cancel"), Map("uuid" -> orderId))
 }

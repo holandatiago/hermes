@@ -148,6 +148,7 @@ class ExchangeClientSpec extends FunSpec {
       it("should call cancelOrder with no errors.") {
         assume(orderSentOption.isDefined)
         assert(cancelOrderTry.isSuccess)
+        assert(cancelOrderTry.get)
       }
       it("should call getOpenOrders with no errors.") {
         assume(mainMarketOption.isDefined)
@@ -161,6 +162,7 @@ class ExchangeClientSpec extends FunSpec {
       it("cancel order too late should not break.") {
         assume(cancelOrderTry.isSuccess)
         assert(cancelAgainOrderTry.isSuccess)
+        assert(!cancelAgainOrderTry.get)
       }
     }
   }

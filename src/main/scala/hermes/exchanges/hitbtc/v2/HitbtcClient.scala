@@ -59,6 +59,6 @@ case class HitbtcClient(publicKey: String, privateKey: String, rateLimit: Long =
     makeRequest[OpenOrder]("POST", List("order"), Map("symbol" -> market.toLowerCase, "type" -> "limit",
       "timeInForce" -> "GTC", "side" -> side.toString.toLowerCase, "price" -> price, "quantity" -> volume)).id
 
-  def cancelOrder(orderId: String): Unit =
-    makeRequest[Option[Nothing]]("DELETE", List("order", orderId))
+  def cancelOrder(orderId: String): Boolean =
+    makeRequest[Option[OpenOrder]]("DELETE", List("order", orderId)).nonEmpty
 }

@@ -33,10 +33,9 @@ trait ExchangeClient {
   protected val http = Http()
   protected var lastRequest = System.currentTimeMillis
 
-  protected implicit def emptyCodec = DefaultJsonProtocol.jsonFormat0[Option[Nothing]](() => None)
-  protected implicit def readFunc2JsonFormat[T](implicit f: JsValue => T) = new RootJsonFormat[T] {
+  protected implicit def readFunctionToRootJsonFormat[T](implicit fun: JsValue => T) = new RootJsonFormat[T] {
+    def read(json: JsValue) = fun(json)
     def write(obj: T) = JsNull
-    def read(json: JsValue) = f(json)
   }
 
   def makeRequest[T: RootJsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
@@ -73,5 +72,5 @@ trait ExchangeClient {
 
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): String
 
-  def cancelOrder(orderId: String): Unit
+  def cancelOrder(orderId: String): Boolean
 }

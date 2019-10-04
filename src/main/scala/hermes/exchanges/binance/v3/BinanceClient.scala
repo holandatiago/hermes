@@ -59,7 +59,7 @@ case class BinanceClient(publicKey: String, privateKey: String, rateLimit: Long 
     makeRequest[OpenOrder]("POST", List("v3", "order"), Map("symbol" -> market, "type" -> "LIMIT",
       "timeInForce" -> "GTC", "side" -> side.toString.toUpperCase, "price" -> price, "quantity" -> volume)).id
 
-  def cancelOrder(orderId: String): Unit =
-    makeRequest[Option[Nothing]]("DELETE", List("v3", "order"),
-      Map("symbol" -> orderId.split(" ").head, "orderId" -> orderId.split(" ").last))
+  def cancelOrder(orderId: String): Boolean =
+    makeRequest[Option[OpenOrder]]("DELETE", List("v3", "order"),
+      Map("symbol" -> orderId.split(" ").head, "orderId" -> orderId.split(" ").last)).nonEmpty
 }
