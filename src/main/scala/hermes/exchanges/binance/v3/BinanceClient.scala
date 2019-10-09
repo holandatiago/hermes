@@ -4,9 +4,11 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import hermes.enums.OrderSide
+import hermes.exchanges.ExchangeClient
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges._
 import hermes.exchanges.binance.v3.BinanceCodecs._
+import hermes.utils.Authenticator
 import spray.json.RootJsonFormat
 
 case class BinanceClient(publicKey: String, privateKey: String, rateLimit: Long = 50L) extends ExchangeClient {

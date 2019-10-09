@@ -1,11 +1,13 @@
 package hermes.exchanges
 
+import hermes.config.Account
+import hermes.enums.OrderSide
 import org.scalatest.FunSpec
 
 import scala.util.Try
 
 class ExchangeClientSpec extends FunSpec {
-  Account.test.map(ExchangeClient.apply).foreach(testClient)
+  Account.values.filter(_.test).map(ExchangeClient.apply).foreach(testClient)
 
   def testClient(client: ExchangeClient): Unit = describe(client.getClass.getName) {
     val marketsTry = Try(client.getMarkets)

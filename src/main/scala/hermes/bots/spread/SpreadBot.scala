@@ -1,53 +1,37 @@
-package hermes.bots
+package hermes.bots.spread
 
-import java.util.concurrent.atomic.AtomicBoolean
-
-import hermes.exchanges.{ExchangeClient, OrderSide}
+import hermes.bots.Bot
+import hermes.config.Strategy
+import hermes.enums.OrderSide
+import hermes.exchanges.ExchangeClient
 import hermes.exchanges.ExchangeModels._
 
-object SpreadBot {
-  case class Config(
-      mainCurrency: String,
-      minimumSpread: BigDecimal,
-      minimumVolume: BigDecimal,
-      maximumAmount: BigDecimal)
-}
+case class SpreadBot(strategy: Strategy.Spread, exchange: ExchangeClient) extends Bot {
+  protected var marketOption: Option[Market] = None
 
-case class SpreadBot(config: SpreadBot.Config, exchange: ExchangeClient) {
-  val shutdownSignal = new AtomicBoolean(false)
-  val runner = new Thread(() => {
-    while (!shutdownSignal.get) onTick()
-    onStop()
-  })
-
-  def start(): Unit = runner.start()
-  def stop(): Unit = shutdownSignal.set(true)
-
-  var marketOption: Option[Market] = None
-
-  def onTick(): Unit = marketOption match {
+  protected def onTick(): Unit = marketOption match {
     case None => marketOption = searchForBestMarket
     case Some(market) => tradeOnMarket(market)
   }
 
-  def onStop(): Unit = {
+  protected def onStop(): Unit = {
     while (marketOption.isDefined) marketOption.foreach(tradeOnMarket)
   }
 
-  val mainMarkets = exchange.getMarkets
-      .filter(_.quoteCurrency == config.mainCurrency)
+  protected val mainMarkets = exchange.getMarkets
+      .filter(_.quoteCurrency == strategy.mainCurrency)
       .filter(_.active).map(mkt => (mkt.name, mkt)).toMap
 
-  def searchForBestMarket: Option[Market] = {
+  protected def searchForBestMarket: Option[Market] = {
     exchange.getTickers
         .filter(ticker => mainMarkets.contains(ticker.market))
-        .filter(ticker => ticker.baseVolume >= config.minimumVolume)
-        .filter(ticker => ticker.ask / ticker.bid >= config.minimumSpread)
+        .filter(ticker => ticker.baseVolume >= strategy.minimumVolume)
+        .filter(ticker => ticker.ask / ticker.bid >= strategy.minimumSpread)
         .sortBy(_.baseVolume).reverse.map(_.market)
         .headOption.map(mainMarkets)
   }
 
-  def tradeOnMarket(market: Market): Unit = {
+  protected def tradeOnMarket(market: Market): Unit = {
     val balances = exchange.getBalances
     val orderBook = exchange.getOrderBook(market.name)
     val openOrders = exchange.getOpenOrders(market.name)
@@ -65,7 +49,7 @@ case class SpreadBot(config: SpreadBot.Config, exchange: ExchangeClient) {
     val bestBid = calculateBestBid(orderBook)
     val bestAsk = calculateBestBid(orderBook)
     val spread = bestAsk / bestBid
-    val timeToExit = spread < config.minimumSpread || shutdownSignal.get
+    val timeToExit = spread < strategy.minimumSpread || shutdownSignal.get
     if (timeToExit && openOrders.isEmpty && baseBalance < market.minBaseVolume) marketOption = None
 
     buyOrder match {
@@ -79,11 +63,11 @@ case class SpreadBot(config: SpreadBot.Config, exchange: ExchangeClient) {
     }
   }
 
-  def calculateBestBid(orderBook: OrderBook): BigDecimal = {
+  protected def calculateBestBid(orderBook: OrderBook): BigDecimal = {
     orderBook.buy.head.price
   }
 
-  def calculateBestAsk(orderBook: OrderBook): BigDecimal = {
+  protected def calculateBestAsk(orderBook: OrderBook): BigDecimal = {
     orderBook.sell.head.price
   }
 }

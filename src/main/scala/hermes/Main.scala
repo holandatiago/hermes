@@ -1,9 +1,13 @@
 package hermes
 
-import exchanges._
+import hermes.bots.Bot
+import hermes.config.Config
+import hermes.exchanges.ExchangeClient
 
 object Main extends App {
-  val account = args.head
-  val client = ExchangeClient(Account(account))
-  bots.SpreadBot(null, client).start()
+  val config = Config(args)
+  val bot = Bot(config.strategy, ExchangeClient(config.account))
+
+  def start(): Unit = bot.start()
+  def stop(): Unit = bot.stop()
 }

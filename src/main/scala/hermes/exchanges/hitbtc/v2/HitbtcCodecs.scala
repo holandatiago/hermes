@@ -2,8 +2,8 @@ package hermes.exchanges.hitbtc.v2
 
 import java.time.Instant
 
+import hermes.enums.OrderSide
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges.OrderSide
 import spray.json._
 
 object HitbtcCodecs extends DefaultJsonProtocol {

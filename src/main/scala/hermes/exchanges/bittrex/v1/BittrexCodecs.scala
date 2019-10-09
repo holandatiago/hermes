@@ -2,8 +2,8 @@ package hermes.exchanges.bittrex.v1
 
 import java.time.{LocalDateTime, ZoneOffset}
 
+import hermes.enums.OrderSide
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges.OrderSide
 import spray.json._
 
 object BittrexCodecs extends DefaultJsonProtocol {

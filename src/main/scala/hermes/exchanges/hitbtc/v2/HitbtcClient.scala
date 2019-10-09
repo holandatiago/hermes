@@ -4,8 +4,9 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import hermes.enums.OrderSide
+import hermes.exchanges.ExchangeClient
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges._
 import hermes.exchanges.hitbtc.v2.HitbtcCodecs._
 import spray.json.RootJsonFormat
 

@@ -1,4 +1,4 @@
-package hermes.exchanges
+package hermes.enums
 
 sealed trait OrderSide {
   def opposite: OrderSide

@@ -5,6 +5,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import hermes.config.Account
+import hermes.enums.OrderSide
 import hermes.exchanges.ExchangeModels._
 import spray.json._
 

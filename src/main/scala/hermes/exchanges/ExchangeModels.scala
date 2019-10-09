@@ -2,6 +2,8 @@ package hermes.exchanges
 
 import java.time.Instant
 
+import hermes.enums.OrderSide
+
 object ExchangeModels {
   case class Market(
       name: String,

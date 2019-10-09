@@ -2,8 +2,8 @@ package hermes.exchanges.binance.v3
 
 import java.time.Instant
 
+import hermes.enums.OrderSide
 import hermes.exchanges.ExchangeModels._
-import hermes.exchanges.OrderSide
 import spray.json._
 
 object BinanceCodecs extends DefaultJsonProtocol {

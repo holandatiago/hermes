@@ -1,4 +1,4 @@
-package hermes.exchanges
+package hermes.utils
 
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
