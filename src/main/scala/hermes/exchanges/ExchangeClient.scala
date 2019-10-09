@@ -68,4 +68,12 @@ trait ExchangeClient {
   def sendOrder(market: String, side: OrderSide, price: BigDecimal, volume: BigDecimal): String
 
   def cancelOrder(orderId: String): Boolean
+
+  def tryToSendOrder(market: Market, side: OrderSide, price: BigDecimal, volume: BigDecimal): Option[String] = {
+    val realPrice = price.quot(market.tickPrice) * market.tickPrice
+    val realVolume = volume.quot(market.tickBaseVolume) * market.tickBaseVolume
+    val minConditions = realPrice * realVolume >= market.minQuoteVolume &&
+        realPrice >= market.minPrice && realVolume >= market.minBaseVolume
+    if (minConditions) Some(sendOrder(market.name, side, realPrice, realVolume)) else None
+  }
 }
