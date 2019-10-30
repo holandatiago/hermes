@@ -1,12 +1,13 @@
 package hermes.bots.spread
 
 import hermes.bots.Bot
-import hermes.config.Strategy
+import hermes.config._
 import hermes.enums.OrderSide
 import hermes.exchanges.ExchangeClient
 import hermes.exchanges.ExchangeModels._
 
-case class SpreadBot(strategy: Strategy.Spread, exchange: ExchangeClient) extends Bot {
+case class SpreadBot(strategy: Strategy.Spread) extends Bot {
+  val exchange: ExchangeClient = ExchangeClient(Account(strategy.account))
   protected var marketOption: Option[Market] = None
 
   protected def onTick(): Unit = marketOption match {
@@ -14,8 +15,9 @@ case class SpreadBot(strategy: Strategy.Spread, exchange: ExchangeClient) extend
     case Some(market) => tradeOnMarket(market)
   }
 
-  protected def onStop(): Unit = {
-    while (marketOption.isDefined) marketOption.foreach(tradeOnMarket)
+  protected def onStop(): Unit = marketOption match {
+    case None => botStatus.set(0)
+    case Some(market) => tradeOnMarket(market)
   }
 
   protected val mainMarkets = exchange.getMarkets
@@ -49,7 +51,7 @@ case class SpreadBot(strategy: Strategy.Spread, exchange: ExchangeClient) extend
     val bestBid = calculateBestBid(orderBook)
     val bestAsk = calculateBestBid(orderBook)
     val spread = bestAsk / bestBid
-    val timeToExit = spread < strategy.minimumSpread || shutdownSignal.get
+    val timeToExit = spread < strategy.minimumSpread || botStatus.get == 2
     if (timeToExit && openOrders.isEmpty && baseBalance < market.minBaseVolume) marketOption = None
 
     buyOrder match {

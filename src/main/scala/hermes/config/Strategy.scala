@@ -7,6 +7,7 @@ sealed trait Strategy {
 object Strategy {
   case class Spread(
       name: String,
+      account: String,
       mainCurrency: String,
       minimumSpread: BigDecimal,
       minimumVolume: BigDecimal,
