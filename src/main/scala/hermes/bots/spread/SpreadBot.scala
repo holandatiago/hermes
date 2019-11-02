@@ -61,11 +61,11 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
     val bestBid = orderBook.buy.head.price + market.tickPrice
     val bestAsk = orderBook.sell.head.price - market.tickPrice
 
-    var bidWindow = strategy.volumeWindow / bestBid
+    var bidWindow = (strategy.volumeWindow + strategy.maximumAmount) / bestBid
     val worstBid = orderBook.buy
         .find { page => bidWindow -= page.volume; bidWindow < 0 }
         .getOrElse(orderBook.buy.last).price + market.tickPrice
-    var askWindow = strategy.volumeWindow / bestAsk
+    var askWindow = (strategy.volumeWindow + strategy.maximumAmount) / bestAsk
     val worstAsk = orderBook.sell
         .find { page => askWindow -= page.volume; askWindow < 0 }
         .getOrElse(orderBook.sell.last).price - market.tickPrice
