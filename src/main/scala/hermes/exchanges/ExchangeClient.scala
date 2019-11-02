@@ -35,6 +35,7 @@ trait ExchangeClient extends StrictLogging {
   protected implicit val executionContext = system.dispatcher
   protected val http = Http()
   protected var lastRequest = System.currentTimeMillis
+  def shutdown(): Unit = Await.ready(system.terminate(), Duration(30, MINUTES))
 
   def makeRequest[T: RootJsonFormat](method: String, route: List[String], params: Map[String, Any] = Map()): T = {
     Thread.sleep(Math.max(lastRequest + rateLimit - System.currentTimeMillis, 0))
