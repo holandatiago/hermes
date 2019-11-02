@@ -5,6 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import com.typesafe.scalalogging.StrictLogging
 import hermes.config.Account
 import hermes.enums.OrderSide
 import hermes.exchanges.ExchangeModels._
@@ -21,7 +22,7 @@ object ExchangeClient {
   }
 }
 
-trait ExchangeClient {
+trait ExchangeClient extends StrictLogging {
   val publicKey: String
   val privateKey: String
   val rateLimit: Long
@@ -47,7 +48,7 @@ trait ExchangeClient {
   protected def printResponse(startTime: Long)(response: HttpResponse): Future[HttpResponse] = {
     response.entity.toStrict(Duration(30, SECONDS)).map { cachedEntity =>
       val header = s"RTT: ${System.currentTimeMillis - startTime}ms - ${response.status} - "
-      cachedEntity.dataBytes.runFold(ByteString(header))(_ ++ _).map(_.utf8String).foreach(println)
+      //cachedEntity.dataBytes.runFold(ByteString(header))(_ ++ _).map(_.utf8String).foreach(logger.debug(_))
       response.copy(entity = cachedEntity)
     }
   }
@@ -76,6 +77,9 @@ trait ExchangeClient {
     val realVolume = volume.quot(market.tickBaseVolume) * market.tickBaseVolume
     val minConditions = realPrice * realVolume >= market.minQuoteVolume &&
         realPrice >= market.minPrice && realVolume >= market.minBaseVolume
-    if (minConditions) Some(sendOrder(market.name, side, realPrice, realVolume)) else None
+    if (minConditions) {
+      println(s"        Sent $side order. (price: $realPrice, volume: $realVolume)")
+      Some(sendOrder(market.name, side, realPrice, realVolume))
+    } else None
   }
 }

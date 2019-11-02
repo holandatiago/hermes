@@ -11,7 +11,7 @@ object BittrexCodecs extends DefaultJsonProtocol {
     name = fromField[String](json, "MarketName"),
     baseCurrency = fromField[String](json, "MarketCurrency"),
     quoteCurrency = fromField[String](json, "BaseCurrency"),
-    minPrice = BigDecimal(0),
+    minPrice = BigDecimal(1, 8),
     tickPrice = BigDecimal(1, 8),
     minBaseVolume = fromField[BigDecimal](json, "MinTradeSize"),
     tickBaseVolume = BigDecimal(1, 8),

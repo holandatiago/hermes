@@ -9,6 +9,8 @@ object Strategy {
       name: String,
       account: String,
       mainCurrency: String,
+      volumeWindow: BigDecimal,
+      minimumTicks: Int,
       minimumSpread: BigDecimal,
       minimumVolume: BigDecimal,
       maximumAmount: BigDecimal) extends Strategy

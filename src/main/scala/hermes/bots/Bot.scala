@@ -2,6 +2,7 @@ package hermes.bots
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.typesafe.scalalogging.StrictLogging
 import hermes.config.Strategy
 
 object Bot {
@@ -10,7 +11,7 @@ object Bot {
   }
 }
 
-trait Bot {
+trait Bot extends StrictLogging {
   protected val botStatus = new AtomicInteger(0)
   protected val runner = new Thread(() => {
     botStatus.set(1)

@@ -11,7 +11,7 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
   protected var marketOption: Option[Market] = None
 
   protected def onTick(): Unit = marketOption match {
-    case None => marketOption = searchForBestMarket
+    case None => searchForBestMarket()
     case Some(market) => tradeOnMarket(market)
   }
 
@@ -24,13 +24,22 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
       .filter(_.quoteCurrency == strategy.mainCurrency)
       .filter(_.active).map(mkt => (mkt.name, mkt)).toMap
 
-  protected def searchForBestMarket: Option[Market] = {
-    exchange.getTickers
+  protected def searchForBestMarket(): Unit = {
+    val tickers = exchange.getTickers
         .filter(ticker => mainMarkets.contains(ticker.market))
-        .filter(ticker => ticker.baseVolume >= strategy.minimumVolume)
+        .filter(ticker => ticker.quoteVolume >= strategy.minimumVolume)
         .filter(ticker => ticker.ask / ticker.bid >= strategy.minimumSpread)
-        .sortBy(_.baseVolume).reverse.map(_.market)
-        .headOption.map(mainMarkets)
+        .filter(ticker => ticker.ask - ticker.bid >= strategy.minimumTicks * mainMarkets(ticker.market).tickPrice)
+        .sortBy(_.quoteVolume).reverse
+    marketOption = tickers.map(_.market).headOption.map(mainMarkets)
+    marketOption match {
+      case None =>
+        println("There are no markets satisfying the minimum conditions.")
+        Thread.sleep(1000)
+      case Some(market) =>
+        val ticker = tickers.head
+        println(s"Entering on market ${market.name}, with spread ${ticker.ask / ticker.bid} and volume ${ticker.baseVolume}")
+    }
   }
 
   protected def tradeOnMarket(market: Market): Unit = {
@@ -47,29 +56,46 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
     val quoteBalance = balances
         .find(_.currency == market.quoteCurrency)
         .map(_.available).getOrElse(BigDecimal(0))
+    val amountToTrade = quoteBalance min strategy.maximumAmount
 
-    val bestBid = calculateBestBid(orderBook)
-    val bestAsk = calculateBestBid(orderBook)
-    val spread = bestAsk / bestBid
+    val bestBid = orderBook.buy.head.price + market.tickPrice
+    val bestAsk = orderBook.sell.head.price - market.tickPrice
+
+    var bidWindow = strategy.volumeWindow / bestBid
+    val worstBid = orderBook.buy
+        .find { page => bidWindow -= page.volume; bidWindow < 0 }
+        .getOrElse(orderBook.buy.last).price + market.tickPrice
+    var askWindow = strategy.volumeWindow / bestAsk
+    val worstAsk = orderBook.sell
+        .find { page => askWindow -= page.volume; askWindow < 0 }
+        .getOrElse(orderBook.sell.last).price - market.tickPrice
+
+    val spread = orderBook.sell.head.price / orderBook.buy.head.price
     val timeToExit = spread < strategy.minimumSpread || botStatus.get == 2
     if (timeToExit && openOrders.isEmpty && baseBalance < market.minBaseVolume) marketOption = None
 
+    println(s"On market ${market.name}:")
+    println(s"    ${market.quoteCurrency} balance: $quoteBalance, ${market.baseCurrency} balance: $baseBalance")
+    println(s"    Spread: $spread")
+    println(s"    BestBid: $bestBid, WorstBid: $worstBid")
+    println(s"    BestAsk: $bestAsk, WorstAsk: $worstAsk")
+    buyOrder.foreach(order => println(s"    Active Buy Order. (price: ${order.price}, volume: ${order.volume}, remaining: ${order.remainingVolume})"))
+    sellOrder.foreach(order => println(s"    Active Sell Order. (price: ${order.price}, volume: ${order.volume}, remaining: ${order.remainingVolume})"))
+
     buyOrder match {
-      case Some(order) => if (bestBid != order.price || timeToExit) exchange.cancelOrder(order.id)
-      case None => if (!timeToExit) exchange.tryToSendOrder(market, OrderSide.Buy, bestBid, quoteBalance / bestBid)
+      case Some(order) => if (order.price < worstBid || timeToExit) {
+        exchange.cancelOrder(order.id)
+        println(s"        Cancelled open Buy order.")
+      }
+      case None => if (!timeToExit) exchange.tryToSendOrder(market, OrderSide.Buy, bestBid, amountToTrade / bestBid)
     }
 
     sellOrder match {
-      case Some(order) => if (bestAsk != order.price) exchange.cancelOrder(order.id)
+      case Some(order) => if (order.price > worstAsk) {
+        exchange.cancelOrder(order.id)
+        println(s"        Cancelled open Sell order.")
+      }
       case None => exchange.tryToSendOrder(market, OrderSide.Sell, bestAsk, baseBalance)
     }
-  }
-
-  protected def calculateBestBid(orderBook: OrderBook): BigDecimal = {
-    orderBook.buy.head.price
-  }
-
-  protected def calculateBestAsk(orderBook: OrderBook): BigDecimal = {
-    orderBook.sell.head.price
   }
 }
