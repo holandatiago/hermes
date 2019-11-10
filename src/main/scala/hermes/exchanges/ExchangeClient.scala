@@ -74,8 +74,8 @@ trait ExchangeClient extends StrictLogging {
   def cancelOrder(orderId: String): Boolean
 
   def tryToSendOrder(market: Market, side: OrderSide, price: BigDecimal, volume: BigDecimal): Option[String] = {
-    val realPrice = price.quot(market.tickPrice) * market.tickPrice
-    val realVolume = volume.quot(market.tickBaseVolume) * market.tickBaseVolume
+    val realPrice = market.tickPrice * price.quot(market.tickPrice).underlying.stripTrailingZeros
+    val realVolume = market.tickBaseVolume * volume.quot(market.tickBaseVolume).underlying.stripTrailingZeros
     val minConditions = realPrice * realVolume >= market.minQuoteVolume &&
         realPrice >= market.minPrice && realVolume >= market.minBaseVolume
     if (minConditions) {
