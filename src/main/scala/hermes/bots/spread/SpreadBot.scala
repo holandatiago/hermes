@@ -10,6 +10,10 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
   val exchange: ExchangeClient = ExchangeClient(Account(strategy.account))
   protected var marketOption: Option[Market] = None
 
+  def setMarket(marketName: String): Unit = {
+    marketOption = Some(mainMarkets(marketName))
+  }
+
   protected def onTick(): Unit = marketOption match {
     case None => searchForBestMarket()
     case Some(market) => tradeOnMarket(market)
@@ -61,11 +65,11 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
     val bestBid = orderBook.buy.head.price + market.tickPrice
     val bestAsk = orderBook.sell.head.price - market.tickPrice
 
-    var bidWindow = (strategy.volumeWindow + strategy.maximumAmount) / bestBid
+    var bidWindow = buyOrder.map(_.remainingVolume).getOrElse(BigDecimal(0)) + (strategy.volumeWindow / bestBid)
     val worstBid = orderBook.buy
         .find { page => bidWindow -= page.volume; bidWindow < 0 }
         .getOrElse(orderBook.buy.last).price + market.tickPrice
-    var askWindow = (strategy.volumeWindow + strategy.maximumAmount) / bestAsk
+    var askWindow = sellOrder.map(_.remainingVolume).getOrElse(BigDecimal(0)) + (strategy.volumeWindow / bestAsk)
     val worstAsk = orderBook.sell
         .find { page => askWindow -= page.volume; askWindow < 0 }
         .getOrElse(orderBook.sell.last).price - market.tickPrice
@@ -87,7 +91,7 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
         exchange.cancelOrder(order.id)
         println(s"        Cancelled open Buy order.")
       }
-      case None => if (!timeToExit) exchange.tryToSendOrder(market, OrderSide.Buy, bestBid, amountToTrade / bestBid)
+      case None => if (!timeToExit && baseBalance * bestBid < strategy.maximumAmount * 2) exchange.tryToSendOrder(market, OrderSide.Buy, bestBid, amountToTrade / bestBid)
     }
 
     sellOrder match {
