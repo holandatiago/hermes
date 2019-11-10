@@ -13,7 +13,8 @@ object Strategy {
       minimumTicks: Int,
       minimumSpread: BigDecimal,
       minimumVolume: BigDecimal,
-      maximumAmount: BigDecimal) extends Strategy
+      maximumAmount: BigDecimal,
+      maximumBought: BigDecimal) extends Strategy
 
   val values: List[Strategy] = Config.value.strategies
 

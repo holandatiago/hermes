@@ -60,7 +60,6 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
     val quoteBalance = balances
         .find(_.currency == market.quoteCurrency)
         .map(_.available).getOrElse(BigDecimal(0))
-    val amountToTrade = quoteBalance min strategy.maximumAmount
 
     val bestBid = orderBook.buy.head.price + market.tickPrice
     val bestAsk = orderBook.sell.head.price - market.tickPrice
@@ -77,6 +76,7 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
     val spread = orderBook.sell.head.price / orderBook.buy.head.price
     val timeToExit = spread < strategy.minimumSpread || botStatus.get == 2
     if (timeToExit && openOrders.isEmpty && baseBalance < market.minBaseVolume) marketOption = None
+    val amountToTrade = quoteBalance min strategy.maximumAmount min (strategy.maximumBought - baseBalance * bestBid)
 
     println(s"On market ${market.name}:")
     println(s"    ${market.quoteCurrency} balance: $quoteBalance, ${market.baseCurrency} balance: $baseBalance")
@@ -91,7 +91,7 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
         exchange.cancelOrder(order.id)
         println(s"        Cancelled open Buy order.")
       }
-      case None => if (!timeToExit && baseBalance * bestBid < strategy.maximumAmount * 2) exchange.tryToSendOrder(market, OrderSide.Buy, bestBid, amountToTrade / bestBid)
+      case None => if (!timeToExit) exchange.tryToSendOrder(market, OrderSide.Buy, bestBid, amountToTrade / bestBid)
     }
 
     sellOrder match {
