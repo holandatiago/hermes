@@ -34,7 +34,7 @@ case class SpreadBot(strategy: Strategy.Spread) extends Bot {
         .filter(ticker => ticker.quoteVolume >= strategy.minimumVolume)
         .filter(ticker => ticker.ask / ticker.bid >= strategy.minimumSpread)
         .filter(ticker => ticker.ask - ticker.bid >= strategy.minimumTicks * mainMarkets(ticker.market).tickPrice)
-        .sortBy(_.quoteVolume).reverse
+        .sortBy(ticker => if (strategy.orderBySpread) ticker.ask / ticker.bid else ticker.quoteVolume).reverse
     marketOption = tickers.map(_.market).headOption.map(mainMarkets)
     marketOption match {
       case None =>

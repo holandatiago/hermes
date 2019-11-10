@@ -11,6 +11,7 @@ object Strategy {
       mainCurrency: String,
       volumeWindow: BigDecimal,
       minimumTicks: Int,
+      orderBySpread: Boolean,
       minimumSpread: BigDecimal,
       minimumVolume: BigDecimal,
       maximumAmount: BigDecimal,
