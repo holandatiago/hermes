@@ -8,6 +8,7 @@ object Strategy {
   case class Spread(
       name: String,
       account: String,
+      rateLimit: Long,
       mainCurrency: String,
       volumeWindow: BigDecimal,
       minimumTicks: Int,

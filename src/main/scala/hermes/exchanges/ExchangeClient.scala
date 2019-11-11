@@ -15,6 +15,12 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 object ExchangeClient {
+  def apply(account: Account, rateLimit: Long): ExchangeClient = account.exchange.toLowerCase match {
+    case "binance" => binance.v3.BinanceClient(account.publicKey, account.privateKey, rateLimit)
+    case "bittrex" => bittrex.v1.BittrexClient(account.publicKey, account.privateKey, rateLimit)
+    case "hitbtc" => hitbtc.v2.HitbtcClient(account.publicKey, account.privateKey, rateLimit)
+  }
+
   def apply(account: Account): ExchangeClient = account.exchange.toLowerCase match {
     case "binance" => binance.v3.BinanceClient(account.publicKey, account.privateKey)
     case "bittrex" => bittrex.v1.BittrexClient(account.publicKey, account.privateKey)

@@ -7,7 +7,7 @@ import hermes.exchanges.ExchangeClient
 import hermes.exchanges.ExchangeModels._
 
 case class SpreadBot(strategy: Strategy.Spread) extends Bot {
-  val exchange: ExchangeClient = ExchangeClient(Account(strategy.account))
+  val exchange: ExchangeClient = ExchangeClient(Account(strategy.account), strategy.rateLimit)
   protected var marketOption: Option[Market] = None
 
   def setMarket(marketName: String): Unit = {
