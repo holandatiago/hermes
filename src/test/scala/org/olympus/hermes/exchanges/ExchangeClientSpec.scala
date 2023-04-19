@@ -2,11 +2,11 @@ package org.olympus.hermes.exchanges
 
 import org.olympus.hermes.config.Account
 import org.olympus.hermes.enums.OrderSide
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 import scala.util.Try
 
-class ExchangeClientSpec extends FunSpec {
+class ExchangeClientSpec extends AnyFunSpec {
   Account.values.filter(_.test).map(ExchangeClient.apply).foreach(testClient)
 
   def testClient(client: ExchangeClient): Unit = describe(client.getClass.getName) {
