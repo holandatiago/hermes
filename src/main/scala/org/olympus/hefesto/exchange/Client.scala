@@ -22,9 +22,21 @@ object Client {
     Await.result(Http().singleRequest(HttpRequest(uri = uri)).flatMap(Unmarshal(_).to[T]), Duration(30, SECONDS))
   }
 
-  def getOptionPrice(symbol: String): OptionPrice =
-    makeRequest[List[OptionPrice]]("mark", Map("symbol" -> symbol)).head
+  def fetchUnderlyingPrice(underlying: String): UnderlyingAsset =
+    makeRequest[UnderlyingAsset]("index", Map("underlying" -> underlying)).copy(underlying = underlying)
 
-  def getSpotPrice(symbol: String): SpotPrice =
-    makeRequest[SpotPrice]("index", Map("underlying" -> symbol)).copy(symbol = symbol)
+  def fetchOptionPrices: List[OptionAsset] = makeRequest[List[OptionAsset]]("mark")
+
+  def fetchMarketInfo: MarketInfo = makeRequest[MarketInfo]("exchangeInfo")
+
+  def fetchMarketPrices: List[UnderlyingAsset] = {
+    val marketInfo = fetchMarketInfo
+    val optionPrices = fetchOptionPrices.groupBy(_.symbol).mapValues(_.head)
+    val options = marketInfo.optionInfo
+      .map(option => option.copy(price = optionPrices(option.symbol).price))
+      .map(option => option.copy(volatility = optionPrices(option.symbol).volatility))
+    marketInfo.underlyingInfo.sortBy(_.underlying)
+      .map(asset => asset.copy(spot = fetchUnderlyingPrice(asset.underlying).spot))
+      .map(asset => asset.copy(options = options.filter(_.underlying == asset.underlying).sortBy(_.symbol)))
+  }
 }
