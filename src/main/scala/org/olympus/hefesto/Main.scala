@@ -2,7 +2,9 @@ package org.olympus.hefesto
 
 import com.opengamma.strata.pricer.impl.option._
 import org.olympus.hefesto.Models._
+import org.olympus.hefesto.Plotter._
 
+import java.time.LocalDate
 import scala.util.Try
 
 object Main extends App {
@@ -40,4 +42,8 @@ object Main extends App {
       println(printFormat.format(option.volatility, blackVol, blackVol / option.volatility))
     }
   }
+
+  marketPrices
+    .find(_.baseAsset == "BTC").get.options.filter(_.term == LocalDate.of(2023, 9, 29))
+    .plot(_.strike, _.volatility, _.side).display("Volatility Smile")
 }
