@@ -1,8 +1,9 @@
 package org.olympus.hefesto
 
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle
-import org.knowm.xchart.style.Styler.ChartTheme
 import org.knowm.xchart._
+import org.knowm.xchart.style.Styler.ChartTheme
+import org.knowm.xchart.style.markers.SeriesMarkers
 
 import scala.collection.JavaConverters._
 
@@ -19,13 +20,35 @@ class Plotter[T](data: List[T]) {
       .foreach { case (group, values) =>
         chart
           .addSeries(group.toString, values.map(xMapper).asJava, values.map(yMapper).map(Double.box).asJava)
-          .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter)
+          .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
       }
+    this
+  }
+
+  def addCurve(curveName: String, curveFunc: Double => Double): this.type = {
+    val minValue = chart.getSeriesMap.asScala.values.map(_.getXMin).min
+    val maxValue = chart.getSeriesMap.asScala.values.map(_.getXMax).max
+    val width = maxValue - minValue
+    val range = Range.BigDecimal(minValue - width / 10, maxValue + width / 10, width / 100).toList.map(_.doubleValue)
+    chart.getStyler.setXAxisMin(minValue)
+    chart.getStyler.setXAxisMax(maxValue)
+
+    chart
+      .addSeries(curveName, range.asJava, range.map(curveFunc).map(Double.box).asJava)
+      .setXYSeriesRenderStyle(XYSeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE)
+    this
+  }
+
+  def addVertical(name: String, value: Double): this.type = {
+    val minYValue = chart.getSeriesMap.asScala.values.map(_.getYMin).min
+    chart.addAnnotation(new AnnotationLine(value, true, false))
+    chart.addAnnotation(new AnnotationText(name, value, minYValue, false))
     this
   }
 
   def display(title: String = ""): Unit = {
     chart.setTitle(title)
-    new SwingWrapper(chart).displayChart(title)
+    chart.getStyler.setCursorEnabled(true)
+    new SwingWrapper(chart).displayChart()
   }
 }

@@ -9,8 +9,12 @@ import scala.util.Try
 
 object Main extends App {
   val marketPrices = Client.fetchMarketPrices
+  //marketPrices.foreach(prettyPrinter)
+  //marketPrices.foreach(pricesPrinter)
+  //marketPrices.foreach(volsPrinter)
+  marketPrices.filter(_.baseAsset == "BTC").foreach(volsPlotter)
 
-  marketPrices.foreach { asset =>
+  def prettyPrinter(asset: UnderlyingAsset): Unit = {
     println(s"${asset.underlying}\tSPOT: %.8f".format(asset.spot))
     asset.options.groupBy(_.term).toList.sortBy(_._1.toEpochDay).foreach { case (term, options) =>
       println(s"\t$term")
@@ -22,7 +26,7 @@ object Main extends App {
     }
   }
 
-  marketPrices.foreach { asset =>
+  def pricesPrinter(asset: UnderlyingAsset): Unit = {
     asset.options.foreach { option =>
       val blackPrice = BlackScholesFormulaRepository
         .price(asset.spot, option.strike, option.timeToExpiry, option.volatility, 0, 0, option.side == OptionSide.CALL)
@@ -31,7 +35,7 @@ object Main extends App {
     }
   }
 
-  marketPrices.foreach { asset =>
+  def volsPrinter(asset: UnderlyingAsset): Unit = {
     asset.options.foreach { option =>
       val solver = new GenericImpliedVolatiltySolver(volatility => Array(
         BlackScholesFormulaRepository
@@ -43,7 +47,10 @@ object Main extends App {
     }
   }
 
-  marketPrices
-    .find(_.baseAsset == "BTC").get.options.filter(_.term == LocalDate.of(2023, 9, 29))
-    .plot(_.strike, _.volatility, _.side).display("Volatility Smile")
+  def volsPlotter(asset: UnderlyingAsset): Unit = {
+    asset
+      .options.filter(_.term == LocalDate.of(2023, 9, 29))
+      .plot(_.strike, _.volatility, _.side).addCurve("LINE", _ => .55)
+      .addVertical("SPOT", asset.spot).display("Volatility Smile")
+  }
 }
