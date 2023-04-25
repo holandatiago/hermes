@@ -14,6 +14,13 @@ object Main extends App {
   //marketPrices.foreach(volsPrinter)
   marketPrices.filter(_.baseAsset == "BTC").foreach(volsPlotter)
 
+  def volsPlotter(asset: UnderlyingAsset): Unit = {
+    asset
+      .options.filter(_.term == LocalDate.of(2023, 9, 29))
+      .plotFields("strike", "volatility", "side").addCurve("SMILE", _ => .55)
+      .addVertical("spot", asset.spot).display("Volatility Smile")
+  }
+
   def prettyPrinter(asset: UnderlyingAsset): Unit = {
     println(s"${asset.underlying}\tSPOT: %.8f".format(asset.spot))
     asset.options.groupBy(_.term).toList.sortBy(_._1.toEpochDay).foreach { case (term, options) =>
@@ -45,12 +52,5 @@ object Main extends App {
       val printFormat = s"${option.symbol}\tVOLS: %8.4f %8.4f\t%8.4f"
       println(printFormat.format(option.volatility, blackVol, blackVol / option.volatility))
     }
-  }
-
-  def volsPlotter(asset: UnderlyingAsset): Unit = {
-    asset
-      .options.filter(_.term == LocalDate.of(2023, 9, 29))
-      .plot(_.strike, _.volatility, _.side).addCurve("LINE", _ => .55)
-      .addVertical("SPOT", asset.spot).display("Volatility Smile")
   }
 }

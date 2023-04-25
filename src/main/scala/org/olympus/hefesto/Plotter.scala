@@ -14,6 +14,19 @@ object Plotter {
 class Plotter[T](data: List[T]) {
   private val chart = new XYChartBuilder().width(1600).height(900).theme(ChartTheme.GGPlot2).build()
 
+  def fieldAccessor[U](fieldName: String): T => U = { asset =>
+    val field = asset.getClass.getDeclaredField(fieldName)
+    field.setAccessible(true)
+    field.get(asset).asInstanceOf[U]
+  }
+
+  def plotFields(xField: String, yField: String, zField: String = null): this.type = {
+    chart.setXAxisTitle(xField)
+    chart.setYAxisTitle(yField)
+    val zGrouper = if (zField == null) (_: T) => "" else fieldAccessor(zField)
+    plot(fieldAccessor[Double](xField), fieldAccessor[Double](yField), zGrouper)
+  }
+
   def plot(xMapper: T => Double, yMapper: T => Double, zGrouper: T => Any = _ => ""): this.type = {
     data
       .groupBy(zGrouper)
