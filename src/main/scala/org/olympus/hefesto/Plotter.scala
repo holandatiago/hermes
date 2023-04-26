@@ -11,57 +11,53 @@ object Plotter {
   implicit def iterableToPlotter[T](x: Iterable[T]): Plotter[T] = new Plotter[T](x.toList)
 }
 
-class Plotter[T](data: List[T]) {
-  private val chart = new XYChartBuilder().width(1600).height(900).theme(ChartTheme.GGPlot2).build()
+case class Plotter[T](
+    data: List[T],
+    xMapper: T => Double = null,
+    yMapper: T => Double = null,
+    zGrouper: T => Any = (_: T) => "",
+    wSplitter: T => Any = (_: T) => "",
+    uLines: List[(String, Double => Double)] = Nil,
+    vLines: List[(String, Double)] = Nil) {
+  def plot(xMapper: T => Double, yMapper: T => Double): Plotter[T] = copy(xMapper = xMapper, yMapper = yMapper)
+  def groupBy(zGrouper: T => Any): Plotter[T] = copy(zGrouper = zGrouper)
+  def splitBy(wSplitter: T => Any): Plotter[T] = copy(wSplitter = wSplitter)
+  def addCurve(uName: String, uFunc: Double => Double): Plotter[T] = copy(uLines = (uName, uFunc) :: uLines)
+  def addVertical(vName: String, vValue: Double): Plotter[T] = copy(vLines = (vName, vValue) :: vLines)
 
-  def fieldAccessor[U](fieldName: String): T => U = { asset =>
-    val field = asset.getClass.getDeclaredField(fieldName)
-    field.setAccessible(true)
-    field.get(asset).asInstanceOf[U]
-  }
-
-  def plotFields(xField: String, yField: String, zField: String = null): this.type = {
-    chart.setXAxisTitle(xField)
-    chart.setYAxisTitle(yField)
-    val zGrouper = if (zField == null) (_: T) => "" else fieldAccessor(zField)
-    plot(fieldAccessor[Double](xField), fieldAccessor[Double](yField), zGrouper)
-  }
-
-  def plot(xMapper: T => Double, yMapper: T => Double, zGrouper: T => Any = _ => ""): this.type = {
-    data
-      .groupBy(zGrouper)
-      .foreach { case (group, values) =>
+  def display(title: String = ""): Unit = if (data.nonEmpty) {
+    val (minXValue, maxXValue) = (-1, 1)
+    val (minYValue, maxYValue) = (0.3, 1.5)
+    val range = Range.BigDecimal(-1.2, 1.2, 0.1).toList.map(_.toDouble)
+    val charts = data
+      .groupBy(wSplitter)
+      .toList.sortBy(_._1.toString)
+      .map { case (part, wValues) =>
+        val chart = new XYChart(800, 600, ChartTheme.GGPlot2)
+        chart.setTitle(part.toString)
+        chart.getStyler.setCursorEnabled(true)
+        chart.getStyler
+          .setXAxisMin(minXValue).setXAxisMax(maxXValue)
+          .setYAxisMin(minYValue).setYAxisMax(maxYValue)
+        vLines.foreach { case (vName, vValue) =>
+          chart.addAnnotation(new AnnotationLine(vValue, true, false))
+          chart.addAnnotation(new AnnotationText(vName, vValue, minYValue, false))
+        }
+        uLines.foreach { case (uName, uFunc) =>
+          chart
+            .addSeries(uName, range.asJava, range.map(uFunc).map(Double.box).asJava)
+            .setXYSeriesRenderStyle(XYSeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE)
+        }
+        wValues
+          .groupBy(zGrouper)
+          .toList.sortBy(_._1.toString)
+          .foreach { case (group, zValues) =>
+            chart
+              .addSeries(group.toString, zValues.map(xMapper).asJava, zValues.map(yMapper).map(Double.box).asJava)
+              .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
+          }
         chart
-          .addSeries(group.toString, values.map(xMapper).asJava, values.map(yMapper).map(Double.box).asJava)
-          .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
       }
-    this
-  }
-
-  def addCurve(curveName: String, curveFunc: Double => Double): this.type = {
-    val minValue = chart.getSeriesMap.asScala.values.map(_.getXMin).min
-    val maxValue = chart.getSeriesMap.asScala.values.map(_.getXMax).max
-    val width = maxValue - minValue
-    val range = Range.BigDecimal(minValue - width / 10, maxValue + width / 10, width / 100).toList.map(_.doubleValue)
-    chart.getStyler.setXAxisMin(minValue)
-    chart.getStyler.setXAxisMax(maxValue)
-
-    chart
-      .addSeries(curveName, range.asJava, range.map(curveFunc).map(Double.box).asJava)
-      .setXYSeriesRenderStyle(XYSeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE)
-    this
-  }
-
-  def addVertical(name: String, value: Double): this.type = {
-    val minYValue = chart.getSeriesMap.asScala.values.map(_.getYMin).min
-    chart.addAnnotation(new AnnotationLine(value, true, false))
-    chart.addAnnotation(new AnnotationText(name, value, minYValue, false))
-    this
-  }
-
-  def display(title: String = ""): Unit = {
-    chart.setTitle(title)
-    chart.getStyler.setCursorEnabled(true)
-    new SwingWrapper(chart).displayChart()
-  }
+    new SwingWrapper(charts.asJava).setTitle(title).displayChartMatrix()
+  } else println(s"data for plot $title is empty")
 }

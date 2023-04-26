@@ -4,21 +4,19 @@ import com.opengamma.strata.pricer.impl.option._
 import org.olympus.hefesto.Models._
 import org.olympus.hefesto.Plotter._
 
-import java.time.LocalDate
 import scala.util.Try
 
 object Main extends App {
   val marketPrices = Client.fetchMarketPrices
-  //marketPrices.foreach(prettyPrinter)
-  //marketPrices.foreach(pricesPrinter)
-  //marketPrices.foreach(volsPrinter)
-  marketPrices.filter(_.baseAsset == "BTC").foreach(volsPlotter)
+  marketPrices.foreach(prettyPrinter)
+  marketPrices.foreach(pricesPrinter)
+  marketPrices.foreach(volsPrinter)
+  marketPrices.foreach(volsPlotter)
 
   def volsPlotter(asset: UnderlyingAsset): Unit = {
-    asset
-      .options.filter(_.term == LocalDate.of(2023, 9, 29))
-      .plotFields("strike", "volatility", "side").addCurve("SMILE", _ => .55)
-      .addVertical("spot", asset.spot).display("Volatility Smile")
+    asset.options
+      .plot(a => Math.log(a.strike) - Math.log(asset.spot), _.volatility).groupBy(_.side).splitBy(_.term)
+      .addCurve("SMILE", _ => .55).addVertical("SPOT", 0).display(asset.underlying)
   }
 
   def prettyPrinter(asset: UnderlyingAsset): Unit = {
@@ -47,7 +45,8 @@ object Main extends App {
       val solver = new GenericImpliedVolatiltySolver(volatility => Array(
         BlackScholesFormulaRepository
           .price(asset.spot, option.strike, option.timeToExpiry, volatility, 0, 0, option.side == OptionSide.CALL),
-        BlackScholesFormulaRepository.vega(asset.spot, option.strike, option.timeToExpiry, volatility, 0, 0)))
+        BlackScholesFormulaRepository
+          .vega(asset.spot, option.strike, option.timeToExpiry, volatility, 0, 0)))
       val blackVol = Try(solver.impliedVolatility(option.price)).getOrElse(Double.NaN)
       val printFormat = s"${option.symbol}\tVOLS: %8.4f %8.4f\t%8.4f"
       println(printFormat.format(option.volatility, blackVol, blackVol / option.volatility))
