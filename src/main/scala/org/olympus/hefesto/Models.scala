@@ -29,5 +29,6 @@ object Models {
       strike: Double,
       side: OptionSide,
       price: Double,
-      volatility: Double)
+      volatility: Double,
+      volSpread: (Double, Double))
 }

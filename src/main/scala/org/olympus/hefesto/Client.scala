@@ -29,6 +29,7 @@ object Client extends DefaultJsonProtocol {
     val options = marketInfo.optionInfo
       .map(option => option.copy(price = optionPrices(option.symbol).price))
       .map(option => option.copy(volatility = optionPrices(option.symbol).volatility))
+      .map(option => option.copy(volSpread = optionPrices(option.symbol).volSpread))
       .map(option => option.copy(timeToExpiry = calculateTimeToExpiry(option.term, marketInfo.currentTime)))
     marketInfo.underlyingInfo.sortBy(_.underlying)
       .map(asset => asset.copy(spot = fetchUnderlyingPrice(asset.underlying).spot))
@@ -50,7 +51,8 @@ object Client extends DefaultJsonProtocol {
       strike = fromField[BigDecimal](json, "strikePrice").doubleValue(),
       side = List(OptionSide.CALL, OptionSide.PUT).find(_.toString == fromField[String](json, "side")).get,
       price = Double.NaN,
-      volatility = Double.NaN))
+      volatility = Double.NaN,
+      volSpread = (Double.NaN, Double.NaN)))
     implicit val marketInfoCodec: RootJsonFormat[MarketInfo] = lift((json: JsValue) => MarketInfo(
       currentTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(fromField[Long](json, "serverTime")), ZoneOffset.UTC),
       underlyingInfo = fromField[List[UnderlyingAsset]](json, "optionContracts"),
@@ -77,7 +79,8 @@ object Client extends DefaultJsonProtocol {
       strike = Double.NaN,
       side = null,
       price = fromField[BigDecimal](json, "markPrice").doubleValue(),
-      volatility = fromField[BigDecimal](json, "markIV").doubleValue()))
+      volatility = fromField[BigDecimal](json, "markIV").doubleValue(),
+      volSpread = (fromField[BigDecimal](json, "bidIV").toDouble, fromField[BigDecimal](json, "askIV").toDouble)))
     makeRequest[List[OptionAsset]]("mark")
   }
 

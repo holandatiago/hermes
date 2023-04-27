@@ -15,7 +15,7 @@ object Main extends App {
 
   def volsPlotter(asset: UnderlyingAsset): Unit = {
     asset.options
-      .plot(_.strike, _.volatility).groupBy(_.side).splitBy(_.term)
+      .plot(_.strike, _.volSpread).groupBy(_.side).splitBy(_.term)
       .addCurve("SMILE", t => t*t).addVertical("SPOT", asset.spot)
       .centeredIn(asset.spot, logarithmic = true)
       .withinLimits((-1, 1), (0, 2)).display(asset.underlying)
