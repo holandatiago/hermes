@@ -18,17 +18,28 @@ case class Plotter[T](
     zGrouper: T => Any = (_: T) => "",
     wSplitter: T => Any = (_: T) => "",
     uLines: List[(String, Double => Double)] = Nil,
-    vLines: List[(String, Double)] = Nil) {
+    vLines: List[(String, Double)] = Nil,
+    xLimits: (Double, Double) = null,
+    yLimits: (Double, Double) = null,
+    tFwd: Double => Double = identity,
+    tBwd: Double => Double = identity) {
   def plot(xMapper: T => Double, yMapper: T => Double): Plotter[T] = copy(xMapper = xMapper, yMapper = yMapper)
   def groupBy(zGrouper: T => Any): Plotter[T] = copy(zGrouper = zGrouper)
   def splitBy(wSplitter: T => Any): Plotter[T] = copy(wSplitter = wSplitter)
   def addCurve(uName: String, uFunc: Double => Double): Plotter[T] = copy(uLines = (uName, uFunc) :: uLines)
   def addVertical(vName: String, vValue: Double): Plotter[T] = copy(vLines = (vName, vValue) :: vLines)
+  def withinLimits(xLim: (Double, Double), yLim: (Double, Double)): Plotter[T] = copy(xLimits = xLim, yLimits = yLim)
+  def centeredIn(center: Double, logarithmic: Boolean = false): Plotter[T] = copy(
+    tFwd = if (logarithmic) x => Math.log(x) - Math.log(center) else x => x - center,
+    tBwd = if (logarithmic) t => Math.exp(t + Math.log(center)) else t => t + center)
 
   def display(title: String = ""): Unit = if (data.nonEmpty) {
-    val (minXValue, maxXValue) = (-1, 1)
-    val (minYValue, maxYValue) = (0.3, 1.5)
-    val range = Range.BigDecimal(-1.2, 1.2, 0.1).toList.map(_.toDouble)
+    val xtMapper = xMapper andThen tFwd
+    val (minXValue, maxXValue) = if (xLimits == null) (data.map(xtMapper).min, data.map(xtMapper).max) else xLimits
+    val (minYValue, maxYValue) = if (yLimits == null) (data.map(yMapper).min, data.map(yMapper).max) else yLimits
+    val step = (maxXValue - minXValue) / 20
+    val range = Range.BigDecimal.inclusive(minXValue - step, maxXValue + step, step).toList.map(_.toDouble)
+
     val charts = data
       .groupBy(wSplitter)
       .toList.sortBy(_._1.toString)
@@ -36,12 +47,13 @@ case class Plotter[T](
         val chart = new XYChart(800, 600, ChartTheme.GGPlot2)
         chart.setTitle(part.toString)
         chart.getStyler.setCursorEnabled(true)
+        chart.getStyler.setCustomCursorXDataFormattingFunction(t => tBwd(t).round.toString)
         chart.getStyler
           .setXAxisMin(minXValue).setXAxisMax(maxXValue)
           .setYAxisMin(minYValue).setYAxisMax(maxYValue)
         vLines.foreach { case (vName, vValue) =>
-          chart.addAnnotation(new AnnotationLine(vValue, true, false))
-          chart.addAnnotation(new AnnotationText(vName, vValue, minYValue, false))
+          chart.addAnnotation(new AnnotationLine(tFwd(vValue), true, false))
+          chart.addAnnotation(new AnnotationText(vName, tFwd(vValue), minYValue, false))
         }
         uLines.foreach { case (uName, uFunc) =>
           chart
@@ -53,7 +65,7 @@ case class Plotter[T](
           .toList.sortBy(_._1.toString)
           .foreach { case (group, zValues) =>
             chart
-              .addSeries(group.toString, zValues.map(xMapper).asJava, zValues.map(yMapper).map(Double.box).asJava)
+              .addSeries(group.toString, zValues.map(xtMapper).asJava, zValues.map(yMapper).map(Double.box).asJava)
               .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
           }
         chart

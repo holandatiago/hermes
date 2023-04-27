@@ -15,8 +15,10 @@ object Main extends App {
 
   def volsPlotter(asset: UnderlyingAsset): Unit = {
     asset.options
-      .plot(a => Math.log(a.strike) - Math.log(asset.spot), _.volatility).groupBy(_.side).splitBy(_.term)
-      .addCurve("SMILE", _ => .55).addVertical("SPOT", 0).display(asset.underlying)
+      .plot(_.strike, _.volatility).groupBy(_.side).splitBy(_.term)
+      .addCurve("SMILE", t => t*t).addVertical("SPOT", asset.spot)
+      .centeredIn(asset.spot, logarithmic = true)
+      .withinLimits((-1, 1), (0, 2)).display(asset.underlying)
   }
 
   def prettyPrinter(asset: UnderlyingAsset): Unit = {
