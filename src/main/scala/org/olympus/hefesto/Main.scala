@@ -15,7 +15,7 @@ object Main extends App {
 
   def volsPlotter(asset: UnderlyingAsset): Unit = {
     asset.options
-      .plot(_.strike, _.volSpread).groupBy(_.side).splitBy(_.term)
+      .plot(_.strike, _.volatility).deviateBy(_.spread).groupBy(_.side).splitBy(_.term)
       .addCurve("SMILE", t => t*t).addVertical("SPOT", asset.spot)
       .centeredIn(asset.spot, logarithmic = true)
       .withinLimits((-1, 1), (0, 2)).display(asset.underlying)
@@ -28,7 +28,7 @@ object Main extends App {
       options.groupBy(_.strike).toList.sortBy(_._1).foreach { case (strike, options) =>
         val List(call, put) = options.sortBy(_.side.toString)
         val printFormat = s"\t\tSTRIKE: %5.0f\tPRICES: %8.2f/C %8.2f/P\tVOLS: %6.4f/C %6.4f/P"
-        println(printFormat.format(strike, call.price, put.price, call.volatility, put.volatility))
+        println(printFormat.format(strike, call.markPrice, put.markPrice, call.markVol, put.markVol))
       }
     }
   }
@@ -36,9 +36,9 @@ object Main extends App {
   def pricesPrinter(asset: UnderlyingAsset): Unit = {
     asset.options.foreach { option =>
       val blackPrice = BlackScholesFormulaRepository
-        .price(asset.spot, option.strike, option.timeToExpiry, option.volatility, 0, 0, option.side == OptionSide.CALL)
+        .price(asset.spot, option.strike, option.timeToExpiry, option.markVol, 0, 0, option.side == OptionSide.CALL)
       val printFormat = s"${option.symbol}\tPRICES: %8.2f %8.2f\t%6.4f"
-      println(printFormat.format(option.price, blackPrice, blackPrice / option.price))
+      println(printFormat.format(option.markPrice, blackPrice, blackPrice / option.markPrice))
     }
   }
 
@@ -49,9 +49,9 @@ object Main extends App {
           .price(asset.spot, option.strike, option.timeToExpiry, volatility, 0, 0, option.side == OptionSide.CALL),
         BlackScholesFormulaRepository
           .vega(asset.spot, option.strike, option.timeToExpiry, volatility, 0, 0)))
-      val blackVol = Try(solver.impliedVolatility(option.price)).getOrElse(Double.NaN)
+      val blackVol = Try(solver.impliedVolatility(option.markPrice)).getOrElse(Double.NaN)
       val printFormat = s"${option.symbol}\tVOLS: %8.4f %8.4f\t%8.4f"
-      println(printFormat.format(option.volatility, blackVol, blackVol / option.volatility))
+      println(printFormat.format(option.markVol, blackVol, blackVol / option.markVol))
     }
   }
 }

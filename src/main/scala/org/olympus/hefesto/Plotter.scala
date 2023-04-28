@@ -14,18 +14,20 @@ object Plotter {
 case class Plotter[T](
     data: List[T],
     xMapper: T => Double = null,
-    yMapper: T => (Double, Double) = null,
+    yMapper: T => Double = null,
     zGrouper: T => Any = (_: T) => "",
     wSplitter: T => Any = (_: T) => "",
+    sDeviator: T => Double = null,
     uLines: List[(String, Double => Double)] = Nil,
     vLines: List[(String, Double)] = Nil,
     xLimits: (Double, Double) = null,
     yLimits: (Double, Double) = null,
     tFwd: Double => Double = identity,
     tBwd: Double => Double = identity) {
-  def plot(xMapper: T => Double, yMapper: T => (Double, Double)): Plotter[T] = copy(xMapper = xMapper, yMapper = yMapper)
+  def plot(xMapper: T => Double, yMapper: T => Double): Plotter[T] = copy(xMapper = xMapper, yMapper = yMapper)
   def groupBy(zGrouper: T => Any): Plotter[T] = copy(zGrouper = zGrouper)
   def splitBy(wSplitter: T => Any): Plotter[T] = copy(wSplitter = wSplitter)
+  def deviateBy(sDeviator: T => Double): Plotter[T] = copy(sDeviator = sDeviator)
   def addCurve(uName: String, uFunc: Double => Double): Plotter[T] = copy(uLines = (uName, uFunc) :: uLines)
   def addVertical(vName: String, vValue: Double): Plotter[T] = copy(vLines = (vName, vValue) :: vLines)
   def withinLimits(xLim: (Double, Double), yLim: (Double, Double)): Plotter[T] = copy(xLimits = xLim, yLimits = yLim)
@@ -36,7 +38,7 @@ case class Plotter[T](
   def display(title: String = ""): Unit = if (data.nonEmpty) {
     val xtMapper = xMapper andThen tFwd
     val (minXValue, maxXValue) = if (xLimits == null) (data.map(xtMapper).min, data.map(xtMapper).max) else xLimits
-    val (minYValue, maxYValue) = if (yLimits == null) (data.map(yMapper).map(_._1).min, data.map(yMapper).map(_._2).max) else yLimits
+    val (minYValue, maxYValue) = if (yLimits == null) (data.map(yMapper).min, data.map(yMapper).max) else yLimits
     val step = (maxXValue - minXValue) / 20
     val range = Range.BigDecimal.inclusive(minXValue - step, maxXValue + step, step).toList.map(_.toDouble)
 
@@ -66,8 +68,8 @@ case class Plotter[T](
           .foreach { case (group, zValues) =>
             chart
               .addSeries(group.toString, zValues.map(xtMapper).asJava,
-                zValues.map(yMapper).map(y => (y._2 + y._1) / 2).map(Double.box).asJava,
-                zValues.map(yMapper).map(y => (y._2 - y._1) / 2).map(Double.box).asJava)
+                zValues.map(yMapper).map(Double.box).asJava,
+                zValues.map(sDeviator).map(Double.box).asJava)
               .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
           }
         chart

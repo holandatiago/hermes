@@ -27,9 +27,10 @@ object Client extends DefaultJsonProtocol {
     val marketInfo = fetchMarketInfo
     val optionPrices = fetchOptionPrices.groupBy(_.symbol).mapValues(_.head)
     val options = marketInfo.optionInfo
-      .map(option => option.copy(price = optionPrices(option.symbol).price))
+      .map(option => option.copy(markPrice = optionPrices(option.symbol).markPrice))
+      .map(option => option.copy(markVol = optionPrices(option.symbol).markVol))
       .map(option => option.copy(volatility = optionPrices(option.symbol).volatility))
-      .map(option => option.copy(volSpread = optionPrices(option.symbol).volSpread))
+      .map(option => option.copy(spread = optionPrices(option.symbol).spread))
       .map(option => option.copy(timeToExpiry = calculateTimeToExpiry(option.term, marketInfo.currentTime)))
     marketInfo.underlyingInfo.sortBy(_.underlying)
       .map(asset => asset.copy(spot = fetchUnderlyingPrice(asset.underlying).spot))
@@ -50,9 +51,10 @@ object Client extends DefaultJsonProtocol {
       timeToExpiry = Double.NaN,
       strike = fromField[BigDecimal](json, "strikePrice").doubleValue(),
       side = List(OptionSide.CALL, OptionSide.PUT).find(_.toString == fromField[String](json, "side")).get,
-      price = Double.NaN,
+      markPrice = Double.NaN,
+      markVol = Double.NaN,
       volatility = Double.NaN,
-      volSpread = (Double.NaN, Double.NaN)))
+      spread = Double.NaN))
     implicit val marketInfoCodec: RootJsonFormat[MarketInfo] = lift((json: JsValue) => MarketInfo(
       currentTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(fromField[Long](json, "serverTime")), ZoneOffset.UTC),
       underlyingInfo = fromField[List[UnderlyingAsset]](json, "optionContracts"),
@@ -78,9 +80,10 @@ object Client extends DefaultJsonProtocol {
       timeToExpiry = Double.NaN,
       strike = Double.NaN,
       side = null,
-      price = fromField[BigDecimal](json, "markPrice").doubleValue(),
-      volatility = fromField[BigDecimal](json, "markIV").doubleValue(),
-      volSpread = (fromField[BigDecimal](json, "bidIV").toDouble, fromField[BigDecimal](json, "askIV").toDouble)))
+      markPrice = fromField[BigDecimal](json, "markPrice").doubleValue(),
+      markVol = fromField[BigDecimal](json, "markIV").doubleValue(),
+      volatility = (fromField[BigDecimal](json, "askIV") + fromField[BigDecimal](json, "bidIV")).doubleValue() / 2,
+      spread = (fromField[BigDecimal](json, "askIV") - fromField[BigDecimal](json, "bidIV")).doubleValue() / 2))
     makeRequest[List[OptionAsset]]("mark")
   }
 

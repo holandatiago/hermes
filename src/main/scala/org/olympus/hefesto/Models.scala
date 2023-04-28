@@ -28,7 +28,8 @@ object Models {
       timeToExpiry: Double,
       strike: Double,
       side: OptionSide,
-      price: Double,
+      markPrice: Double,
+      markVol: Double,
       volatility: Double,
-      volSpread: (Double, Double))
+      spread: Double)
 }
