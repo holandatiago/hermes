@@ -10,26 +10,38 @@ object Models {
   }
 
   case class MarketInfo(
-      currentTime: LocalDateTime,
       underlyingInfo: List[UnderlyingAsset],
-      optionInfo: List[OptionAsset])
+      optionInfo: List[OptionAsset],
+      currentTime: LocalDateTime)
 
   case class UnderlyingAsset(
-      underlying: String,
+      symbol: String,
       baseAsset: String,
       quoteAsset: String,
       spot: Double,
-      options: List[OptionAsset])
+      interestRate: Double,
+      currentTime: LocalDateTime) {
+    var options: List[OptionAsset] = null
+  }
 
   case class OptionAsset(
       symbol: String,
       underlying: String,
       term: LocalDate,
-      timeToExpiry: Double,
       strike: Double,
       side: OptionSide,
-      markPrice: Double,
-      markVol: Double,
       volatility: Double,
-      spread: Double)
+      spread: Double) {
+    var asset: UnderlyingAsset = null
+
+    lazy val timeToExpiry: Double = {
+      val termEpochSecond = term.atTime(8, 0).toEpochSecond(ZoneOffset.UTC).toDouble
+      val currentEpochSecond = asset.currentTime.toEpochSecond(ZoneOffset.UTC).toDouble
+      (termEpochSecond - currentEpochSecond) / (365 * 24 * 60 * 60)
+    }
+
+    lazy val logMoneyness: Double = {
+      Math.log(strike) - Math.log(asset.spot) - asset.interestRate * timeToExpiry
+    }
+  }
 }

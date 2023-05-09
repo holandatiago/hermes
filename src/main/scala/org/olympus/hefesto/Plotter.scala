@@ -16,50 +16,37 @@ case class Plotter[T](
     xMapper: T => Double = null,
     yMapper: T => Double = null,
     zGrouper: T => Any = (_: T) => "",
-    wSplitter: T => Any = (_: T) => "",
-    sDeviator: T => Double = null,
-    uLines: List[(String, Double => Double)] = Nil,
-    vLines: List[(String, Double)] = Nil,
+    wSplitter: T => Double = (_: T) => 0D,
+    vDeviator: T => Double = null,
+    uLines: List[(String, (Double, Double) => Double)] = Nil,
     xLimits: (Double, Double) = null,
-    yLimits: (Double, Double) = null,
-    tFwd: Double => Double = identity,
-    tBwd: Double => Double = identity) {
+    yLimits: (Double, Double) = null) {
   def plot(xMapper: T => Double, yMapper: T => Double): Plotter[T] = copy(xMapper = xMapper, yMapper = yMapper)
   def groupBy(zGrouper: T => Any): Plotter[T] = copy(zGrouper = zGrouper)
-  def splitBy(wSplitter: T => Any): Plotter[T] = copy(wSplitter = wSplitter)
-  def deviateBy(sDeviator: T => Double): Plotter[T] = copy(sDeviator = sDeviator)
-  def addCurve(uName: String, uFunc: Double => Double): Plotter[T] = copy(uLines = (uName, uFunc) :: uLines)
-  def addVertical(vName: String, vValue: Double): Plotter[T] = copy(vLines = (vName, vValue) :: vLines)
+  def splitBy(wSplitter: T => Double): Plotter[T] = copy(wSplitter = wSplitter)
+  def deviateBy(vDeviator: T => Double): Plotter[T] = copy(vDeviator = vDeviator)
+  def addCurve(uName: String, uFunc: (Double, Double) => Double): Plotter[T] = copy(uLines = (uName, uFunc) :: uLines)
   def withinLimits(xLim: (Double, Double), yLim: (Double, Double)): Plotter[T] = copy(xLimits = xLim, yLimits = yLim)
-  def centeredIn(center: Double, logarithmic: Boolean = false): Plotter[T] = copy(
-    tFwd = if (logarithmic) x => Math.log(x) - Math.log(center) else x => x - center,
-    tBwd = if (logarithmic) t => Math.exp(t + Math.log(center)) else t => t + center)
 
   def display(title: String = ""): Unit = if (data.nonEmpty) {
-    val xtMapper = xMapper andThen tFwd
-    val (minXValue, maxXValue) = if (xLimits == null) (data.map(xtMapper).min, data.map(xtMapper).max) else xLimits
+    val (minXValue, maxXValue) = if (xLimits == null) (data.map(xMapper).min, data.map(xMapper).max) else xLimits
     val (minYValue, maxYValue) = if (yLimits == null) (data.map(yMapper).min, data.map(yMapper).max) else yLimits
-    val step = (maxXValue - minXValue) / 20
-    val range = Range.BigDecimal.inclusive(minXValue - step, maxXValue + step, step).toList.map(_.toDouble)
+    val step = (maxXValue - minXValue) / 80
+    val range = Range.BigDecimal.inclusive(minXValue - 4 * step, maxXValue + 4 * step, step).toList.map(_.toDouble)
 
     val charts = data
       .groupBy(wSplitter)
-      .toList.sortBy(_._1.toString)
+      .toList.sortBy(_._1)
       .map { case (part, wValues) =>
         val chart = new XYChart(800, 600, ChartTheme.GGPlot2)
         chart.setTitle(part.toString)
         chart.getStyler.setCursorEnabled(true)
-        chart.getStyler.setCustomCursorXDataFormattingFunction(t => tBwd(t).round.toString)
         chart.getStyler
           .setXAxisMin(minXValue).setXAxisMax(maxXValue)
           .setYAxisMin(minYValue).setYAxisMax(maxYValue)
-        vLines.foreach { case (vName, vValue) =>
-          chart.addAnnotation(new AnnotationLine(tFwd(vValue), true, false))
-          chart.addAnnotation(new AnnotationText(vName, tFwd(vValue), minYValue, false))
-        }
         uLines.foreach { case (uName, uFunc) =>
           chart
-            .addSeries(uName, range.asJava, range.map(uFunc).map(Double.box).asJava)
+            .addSeries(uName, range.asJava, range.map(uFunc(_, part)).map(Double.box).asJava)
             .setXYSeriesRenderStyle(XYSeriesRenderStyle.Line).setMarker(SeriesMarkers.NONE)
         }
         wValues
@@ -67,9 +54,9 @@ case class Plotter[T](
           .toList.sortBy(_._1.toString)
           .foreach { case (group, zValues) =>
             chart
-              .addSeries(group.toString, zValues.map(xtMapper).asJava,
+              .addSeries(group.toString, zValues.map(xMapper).asJava,
                 zValues.map(yMapper).map(Double.box).asJava,
-                zValues.map(sDeviator).map(Double.box).asJava)
+                zValues.map(vDeviator).map(Double.box).asJava)
               .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
           }
         chart

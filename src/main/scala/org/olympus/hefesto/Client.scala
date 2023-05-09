@@ -25,51 +25,48 @@ object Client extends DefaultJsonProtocol {
 
   def fetchMarketPrices: List[UnderlyingAsset] = {
     val marketInfo = fetchMarketInfo
-    val optionPrices = fetchOptionPrices.groupBy(_.symbol).mapValues(_.head)
-    val options = marketInfo.optionInfo
-      .map(option => option.copy(markPrice = optionPrices(option.symbol).markPrice))
-      .map(option => option.copy(markVol = optionPrices(option.symbol).markVol))
-      .map(option => option.copy(volatility = optionPrices(option.symbol).volatility))
-      .map(option => option.copy(spread = optionPrices(option.symbol).spread))
-      .map(option => option.copy(timeToExpiry = calculateTimeToExpiry(option.term, marketInfo.currentTime)))
-    marketInfo.underlyingInfo.sortBy(_.underlying)
-      .map(asset => asset.copy(spot = fetchUnderlyingPrice(asset.underlying).spot))
-      .map(asset => asset.copy(options = options.filter(_.underlying == asset.underlying).sortBy(_.symbol)))
+    val optionVols = fetchOptionPrices.groupBy(_.symbol).mapValues(_.head)
+    val options = marketInfo.optionInfo.map(option => (option, optionVols(option.symbol)))
+      .map { case (option, optionVol) => option.copy(volatility = optionVol.volatility, spread = optionVol.spread) }
+      .groupBy(_.underlying).mapValues(_.filter(_.volatility > 0.01).sortBy(_.symbol)).withDefaultValue(Nil)
+    val underlyings = marketInfo.underlyingInfo.sortBy(_.symbol)
+      .map(asset => asset.copy(spot = fetchUnderlyingPrice(asset.symbol).spot, currentTime = marketInfo.currentTime))
+    underlyings.foreach { asset => asset.options = options(asset.symbol); asset.options.foreach(_.asset = asset) }
+    underlyings
   }
 
   def fetchMarketInfo: MarketInfo = {
     implicit val underlyingInfoCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
-      underlying = fromField[String](json, "underlying"),
+      symbol = fromField[String](json, "underlying"),
       baseAsset = fromField[String](json, "baseAsset"),
       quoteAsset = fromField[String](json, "quoteAsset"),
       spot = Double.NaN,
-      options = null))
+      interestRate = 0D,
+      currentTime = null))
     implicit val optionInfoCodec: RootJsonFormat[OptionAsset] = lift((json: JsValue) => OptionAsset(
       symbol = fromField[String](json, "symbol"),
       underlying = fromField[String](json, "underlying"),
       term = LocalDate.ofInstant(Instant.ofEpochMilli(fromField[Long](json, "expiryDate")), ZoneOffset.UTC),
-      timeToExpiry = Double.NaN,
       strike = fromField[BigDecimal](json, "strikePrice").doubleValue(),
       side = List(OptionSide.CALL, OptionSide.PUT).find(_.toString == fromField[String](json, "side")).get,
-      markPrice = Double.NaN,
-      markVol = Double.NaN,
       volatility = Double.NaN,
       spread = Double.NaN))
     implicit val marketInfoCodec: RootJsonFormat[MarketInfo] = lift((json: JsValue) => MarketInfo(
-      currentTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(fromField[Long](json, "serverTime")), ZoneOffset.UTC),
       underlyingInfo = fromField[List[UnderlyingAsset]](json, "optionContracts"),
-      optionInfo = fromField[List[OptionAsset]](json, "optionSymbols")))
+      optionInfo = fromField[List[OptionAsset]](json, "optionSymbols"),
+      currentTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(fromField[Long](json, "serverTime")), ZoneOffset.UTC)))
     makeRequest[MarketInfo]("exchangeInfo")
   }
 
   def fetchUnderlyingPrice(underlying: String): UnderlyingAsset = {
     implicit val underlyingPriceCodec: RootJsonFormat[UnderlyingAsset] = lift((json: JsValue) => UnderlyingAsset(
-      underlying = null,
+      symbol = null,
       baseAsset = null,
       quoteAsset = null,
       spot = fromField[BigDecimal](json, "indexPrice").doubleValue(),
-      options = null))
-    makeRequest[UnderlyingAsset]("index", Map("underlying" -> underlying)).copy(underlying = underlying)
+      interestRate = Double.NaN,
+      currentTime = null))
+    makeRequest[UnderlyingAsset]("index", Map("underlying" -> underlying)).copy(symbol = underlying)
   }
 
   def fetchOptionPrices: List[OptionAsset] = {
@@ -77,19 +74,10 @@ object Client extends DefaultJsonProtocol {
       symbol = fromField[String](json, "symbol"),
       underlying = null,
       term = null,
-      timeToExpiry = Double.NaN,
       strike = Double.NaN,
       side = null,
-      markPrice = fromField[BigDecimal](json, "markPrice").doubleValue(),
-      markVol = fromField[BigDecimal](json, "markIV").doubleValue(),
       volatility = (fromField[BigDecimal](json, "askIV") + fromField[BigDecimal](json, "bidIV")).doubleValue() / 2,
       spread = (fromField[BigDecimal](json, "askIV") - fromField[BigDecimal](json, "bidIV")).doubleValue() / 2))
     makeRequest[List[OptionAsset]]("mark")
-  }
-
-  def calculateTimeToExpiry(term: LocalDate, currentTime: LocalDateTime): Double = {
-    val termEpochSecond = term.atTime(8, 0).toEpochSecond(ZoneOffset.UTC).toDouble
-    val currentEpochSecond = currentTime.toEpochSecond(ZoneOffset.UTC).toDouble
-    (termEpochSecond - currentEpochSecond) / (365 * 24 * 60 * 60)
   }
 }
