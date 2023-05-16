@@ -54,7 +54,8 @@ case class Plotter[T](
           .toList.sortBy(_._1.toString)
           .foreach { case (group, zValues) =>
             chart
-              .addSeries(group.toString, zValues.map(xMapper).asJava,
+              .addSeries(group.toString,
+                zValues.map(xMapper).asJava,
                 zValues.map(yMapper).map(Double.box).asJava,
                 zValues.map(vDeviator).map(Double.box).asJava)
               .setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarker(SeriesMarkers.CIRCLE)
