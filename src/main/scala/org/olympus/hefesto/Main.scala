@@ -12,6 +12,6 @@ object Main extends App {
     asset.options
       .plot(_.logMoneyness, _.volatility).deviateBy(_.spread).groupBy(_.side).splitBy(_.timeToExpiry)
       .addCurve("SMILE", surface.volatility).withinLimits((-1, 1), (0, 2)).display(asset.symbol)
-    println(s"Plotted ${asset.symbol}\t${surface.objectiveFunction(asset)}\t$surface")
+    println(s"Plotted ${asset.symbol}\t${surface.rootMeanSquareError(asset)}\t$surface")
   } else println(s"isEmpty ${asset.symbol}")
 }
