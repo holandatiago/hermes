@@ -1,10 +1,9 @@
 package org.olympus.hefesto
 
 import org.olympus.hefesto.Models.UnderlyingAsset
+import org.olympus.hefesto.Optimizer._
 
-case class Surface(params: Vector[Double]) {
-  val Vector(sigma, rho, eta) = params
-
+case class Surface(sigma: Double, rho: Double, eta: Double) {
   def volatility(k: Double, t: Double): Double = {
     val theta = sigma * sigma * t
     val phi = eta / Math.sqrt(theta)
@@ -21,7 +20,12 @@ case class Surface(params: Vector[Double]) {
 }
 
 object Surface {
+  def apply(params: Array[Double]): Surface = {
+    val Array(logSigma, logitRho, logEta) = params
+    Surface(Math.exp(logSigma), 2 / (Math.exp(-logitRho) + 1) - 1, Math.exp(logEta))
+  }
+
   def calibrate(asset: UnderlyingAsset): Surface = {
-    Surface(Optmizer.minimize(Surface(_).rootMeanSquareError(asset), Vector(1, 0, 1)))
+    Surface(Array.fill(3)(0D).minimizeBy(Surface(_).rootMeanSquareError(asset)))
   }
 }

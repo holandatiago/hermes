@@ -8,7 +8,7 @@ import org.knowm.xchart.style.markers.SeriesMarkers
 import scala.collection.JavaConverters._
 
 object Plotter {
-  implicit def iterableToPlotter[T](x: Iterable[T]): Plotter[T] = new Plotter[T](x.toList)
+  implicit def iterableToPlotter[T](it: Iterable[T]): Plotter[T] = Plotter[T](it.toList)
 }
 
 case class Plotter[T](
