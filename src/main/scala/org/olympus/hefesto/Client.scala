@@ -28,7 +28,7 @@ object Client extends DefaultJsonProtocol {
     val optionVols = fetchOptionPrices.groupBy(_.symbol).mapValues(_.head)
     val options = marketInfo.optionInfo.map(option => (option, optionVols(option.symbol)))
       .map { case (option, optionVol) => option.copy(volatility = optionVol.volatility, spread = optionVol.spread) }
-      .groupBy(_.underlying).mapValues(_.filter(_.volatility > 0.01).sortBy(_.symbol)).withDefaultValue(Nil)
+      .groupBy(_.underlying).mapValues(_.filter(_.isValid).sortBy(_.symbol)).withDefaultValue(Nil)
     val underlyings = marketInfo.underlyingInfo.sortBy(_.symbol)
       .map(asset => asset.copy(spot = fetchUnderlyingPrice(asset.symbol).spot, currentTime = marketInfo.currentTime))
     underlyings.foreach { asset => asset.options = options(asset.symbol); asset.options.foreach(_.asset = asset) }

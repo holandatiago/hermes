@@ -21,8 +21,8 @@ case class Surface(sigma: Double, rho: Double, eta: Double) {
 
 object Surface {
   def apply(params: Array[Double]): Surface = {
-    val Array(logSigma, logitRho, logEta) = params
-    Surface(Math.exp(logSigma), 2 / (Math.exp(-logitRho) + 1) - 1, Math.exp(logEta))
+    val Array(logSigma, logitRho, logitEta) = params
+    Surface(Math.exp(logSigma) / 2, 2 / (Math.exp(-logitRho) + 1) - 1, 2 / (Math.exp(-logitEta) + 1))
   }
 
   def calibrate(asset: UnderlyingAsset): Surface = {

@@ -43,5 +43,7 @@ object Models {
     lazy val logMoneyness: Double = {
       Math.log(strike) - Math.log(asset.spot) - asset.interestRate * timeToExpiry
     }
+
+    lazy val isValid: Boolean = volatility > 0.01 && volatility < 10 - 0.01
   }
 }
